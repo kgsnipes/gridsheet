@@ -11,8 +11,11 @@
     'EM_SUFFIX':'em',
     'PERCENTAGE_SUFFIX':'%',
     'ONEPX2EM':0.167,
-    'CHROME_BROWSER':'Chrome'
-    }
+    'CHROME_BROWSER':'Chrome',
+    'SHEET_PREFIX':'Sheet ',
+    'CELL_LABEL_SEPARATOR':'-',
+    'COLUMN_NAME_CHARACTERS':'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split(' ')
+    };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
     the DEV mode flag */
@@ -22,7 +25,7 @@
         var DEBUG_MODE=false;
         var infoLog=function(message)
         {
-            if(DEV_MODE && typeof infoLog.caller ==='function')
+            if(DEV_MODE)
             {
                 if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'])
                 {
@@ -58,7 +61,21 @@
                 }    
             }
         };
-        return {info:infoLog,debug:debugLog};   
+        var errorLog=function(message)
+        {
+            
+            if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'])
+            {
+                console.log('%c[ERROR]%c '+message,'color:white;background-color:red;','color:black;background-color:white;');    
+            }
+            else
+            {
+                console.log('[ERROR] '+message);        
+            }
+                
+            
+        };
+        return {info:infoLog,debug:debugLog,error:errorLog};   
     };
     /*logging object*/
     var LOG=new Logger();
@@ -105,6 +122,26 @@
             {string: navigator.userAgent, subString: "Safari", identity: "Safari"}       
         ]
     };
+    function Document()
+    {
+        var name=null;
+        var sheets=null;
+    }
+    /*definition of a sheet*/
+    function Sheet()
+    {
+        var name=null;
+        var sheetData=null;
+    }
+    /*definition of a SheetCell*/
+    function SheetCell()
+    {
+        var data=null;
+        var label=null;/*this would be <ColumnName>-<RowNumber>*/
+        var rowNumber=null;
+        var columnName=null;
+
+    };
     
    
     
@@ -117,8 +154,14 @@
         this._defaults = $.fn.gridsheet.defaults;
         /*overriding options with default options defined*/
         this.options = $.extend({}, this._defaults, options);
-
-        this.init();
+        try{
+            this.init();
+        }
+        catch(exception)
+        {
+            LOG.error(JSON.stringify(exception));
+        }
+        
     }
     /*adding functionality to the Plugin function created above*/
     $.extend(Plugin.prototype, {
@@ -128,7 +171,8 @@
              LOG.debug('Entering init() ');
             /*initiating browser detection*/
              BrowserDetect.init();
-
+             /*init Document Data*/
+             this.initDocumentData();
             /*this build the dom object and caches this in the jquery object*/
             this.buildCache();
             /*this starts to build up the UI*/
@@ -151,10 +195,97 @@
             this.getInitialMeasurementsForUI();
             /*setting the dimensions for the container*/
             this.setDimensionsForContainer();
+            
             /*creating the table*/
-            //this.assembleSheetUI();
+            this.assembleSheetUI();
             /*hiding the loader*/
             this.loaded();
+           
+        },
+        initDocumentData:function()
+        {
+            this.document=new Document();
+            this.document.sheets=new Array(this.options.sheets);
+            for(i=0;i<this.options.sheets;i++)
+            {
+                this.document.sheets[i]=new Sheet();
+                this.document.sheets[i].name=CONSTANTS['SHEET_PREFIX']+(i+1);
+                this.createSheetData(this.document.sheets[i],this.options.rows,this.options.columns);
+            }  
+        },
+        createSheetData:function(sheet,rows,columns)
+        {
+            sheet.sheetData=new Array(rows);
+            for(i=0;i<sheet.sheetData.length;i++)
+            {
+                sheet.sheetData[i]=new Array(columns);
+            }
+            this.feedEmptyDataIntoNewCellsForSheet(sheet.sheetData);
+            return sheet.sheetData;
+        },
+        feedEmptyDataIntoNewCellsForSheet:function(sheetData)
+        {
+            for(i=0;i<sheetData.length;i++)
+            {
+                for(j=0;j<sheetData[i].length;j++)
+                {
+                    sheetData[i][j]=new SheetCell();
+                    this.createSheetCellEmptyData(sheetData[i][j],i,j);
+                }
+            }
+            return sheetData;
+        },
+        createSheetCellEmptyData:function(cell,row,column)
+        {
+            cell.data='';
+            cell.rowNumber=row;
+            cell.columnName=getColumnNameForColumnNumber(column);
+            cell.lable=cell.columnName+CONSTANTS['CELL_LABEL_SEPARATOR']+cell.rowNumber;
+        },
+        getColumnNameForColumnNumber:function(columnNumber)
+        {
+            if(columnNumber<=25)
+            {
+                return CONSTANTS['COLUMN_NAME_CHARACTERS'][columnNumber];
+            }
+            else
+            {
+               var columnName='';
+                i=columnNumber;
+                j=0;
+                while(i>25)
+                {
+                  j=i%26;
+                  i=parseInt(i/26);
+                  if(i<=26)
+                  {
+                    columnName=columnName+CONSTANTS['COLUMN_NAME_CHARACTERS'][i-1];
+                  }      
+                  else
+                  {
+                    columnName=columnName+this.getColumnNameForColumnNumber(i);
+                  }
+                    
+                }
+              if(j>=0){
+               columnName=columnName+CONSTANTS['COLUMN_NAME_CHARACTERS'][j]; 
+              }
+              
+               return columnName;
+            }
+        },
+        getColumnNumberForColumnName:function(columnName)
+        {
+
+        },
+        assembleSheetUI:function()
+        {
+            LOG.debug('Entering assembleSheetUI() ');
+
+            this.addColumns(this.options.columns);
+        },
+        addColumns:function(columnCount)
+        {
            
         },
         setDimensionsForContainer:function () {
@@ -200,7 +331,9 @@
             LOG.info('calculated height in pixels : '+this.options._height);
             LOG.info('calculated width in pixels : '+this.options._width);
 
-
+            
+            LOG.info('the column width is calculated at :'+this.options._columnWidth);
+            LOG.info('the row height is calculated at : '+this.options._rowHeight);
             LOG.info('done with getInitialMeasurementsForUI');
         },
         /*converts a number corrected to 2 decimal places*/
@@ -323,6 +456,13 @@
         height: '100%',
         columns:10,
         rows:500,
+        _columnWidth:100,
+        _rowHeight:30,
+        _currentColumnCount:-1,
+        _currentRowCount:-1,
+        _currentColumnLabel:null,
+        _currentSheetCount:-1,
+        sheets:3,
         onComplete: null
     };
 
