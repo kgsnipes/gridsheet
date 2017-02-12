@@ -2,18 +2,9 @@
 <html>
 <head>
   <title>Gridsheet - Kaushik Ganguly</title>  
+  <link rel="stylesheet" type="text/css" href="gridsheet.css">
 </head>
-<style type="text/css">
-.gridsheet
-{
-  border: 1px solid #000;
-  width:100px;
-  height:100px;
-}
-</style>
-
 <body >
-
   <div class="gridsheet">
   </div>
   
@@ -22,7 +13,7 @@
  <script>
  	$(document).ready(function(){
 
- 		$(".gridsheet").gridsheet();
+ 		$(".gridsheet").gridsheet({onComplete:function(){console.log('finished loading the plugin')}});
  	});
 
  </script>
