@@ -204,10 +204,14 @@
         },
         initDocumentData:function()
         {
+            LOG.debug('Entering initDocumentData() ');
+            /*creating the document object*/
             this.document=new Document();
+            /*initializing the sheets */
             this.document.sheets=new Array(this.options.sheets);
             for(i=0;i<this.options.sheets;i++)
             {
+                /*creating the sheet and populating empty data in the sheets*/
                 this.document.sheets[i]=new Sheet();
                 this.document.sheets[i].name=CONSTANTS['SHEET_PREFIX']+(i+1);
                 this.createSheetData(this.document.sheets[i],this.options.rows,this.options.columns);
@@ -215,35 +219,45 @@
         },
         createSheetData:function(sheet,rows,columns)
         {
+            LOG.debug('Entering createSheetData() ');
+            /*creating the sheet data as a 2D array*/
             sheet.sheetData=new Array(rows);
             for(i=0;i<sheet.sheetData.length;i++)
             {
                 sheet.sheetData[i]=new Array(columns);
             }
+            /*creating empty data in the cells.*/
             this.feedEmptyDataIntoNewCellsForSheet(sheet.sheetData);
             return sheet.sheetData;
         },
         feedEmptyDataIntoNewCellsForSheet:function(sheetData)
         {
+            LOG.debug('Entering feedEmptyDataIntoNewCellsForSheet() ');
+            /*iterating through the 2D Array and assigning the sheet cell object in the sheet data 2D array*/
             for(i=0;i<sheetData.length;i++)
             {
                 for(j=0;j<sheetData[i].length;j++)
                 {
                     sheetData[i][j]=new SheetCell();
-                    this.createSheetCellEmptyData(sheetData[i][j],i,j);
+                    this.createSheetCellWithData(sheetData[i][j],i,j,'');
                 }
             }
             return sheetData;
         },
-        createSheetCellEmptyData:function(cell,row,column)
+        createSheetCellWithData:function(cell,row,column,data)
         {
-            cell.data='';
+            LOG.debug('Entering createSheetCellEmptyData() ');
+            /*creating and defining the sheet cell object with null data*/
+            cell.data=data;
             cell.rowNumber=row;
             cell.columnName=getColumnNameForColumnNumber(column);
             cell.lable=cell.columnName+CONSTANTS['CELL_LABEL_SEPARATOR']+cell.rowNumber;
+            return cell;
         },
         getColumnNameForColumnNumber:function(columnNumber)
         {
+            LOG.debug('Entering getColumnNameForColumnNumber() ');
+            /*need to revisit this logic as this needs to be optimized*/
             if(columnNumber<=25)
             {
                 return CONSTANTS['COLUMN_NAME_CHARACTERS'][columnNumber];
@@ -469,7 +483,7 @@
     $.fn.gridsheet.defaults = {
         width: '100%',
         height: '100%',
-        columns:10,
+        columns:100,
         rows:500,
         _columnWidth:100,
         _rowHeight:30,
