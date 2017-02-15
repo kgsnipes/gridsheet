@@ -297,7 +297,7 @@
               multiplier=1;
                     for(i=columnName.length-1;i>=0;i--,multiplier+=26)
                     {
-                        index=CONSTANTS['COLUMN_NAME_CHARACTERS'].findIndex(function(element){return                              columnName.charAt(i)==element;});
+                        index=CONSTANTS['COLUMN_NAME_CHARACTERS'].findIndex(function(element){return columnName.charAt(i)==element;});
                       console.log(index);
                         if(index!=-1)
                         {
