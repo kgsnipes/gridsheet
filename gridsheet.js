@@ -14,7 +14,7 @@
     'CHROME_BROWSER':'Chrome',
     'SHEET_PREFIX':'Sheet ',
     'CELL_LABEL_SEPARATOR':'-',
-    'COLUMN_NAME_CHARACTERS':'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split(' ')
+    'COLUMN_NAME_CHARACTERS':'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -22,14 +22,18 @@
     function Logger(){
         /*defining DEV mode*/
         var DEV_MODE=true;
-        var DEBUG_MODE=false;
+        var DEBUG_MODE=true;
         var infoLog=function(message)
         {
             if(DEV_MODE)
             {
-                if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'])
+                if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.info)
                 {
-                    console.log('%c[INFO]%c '+infoLog.caller.name+'() - '+message,'color:white;background-color:green;','color:black;background-color:white;');    
+                    console.info('%c[INFO]%c '+infoLog.caller.name+'() - '+message,'color:white;background-color:green;','color:black;background-color:white;');    
+                }
+                else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.info)
+                {
+                    console.info('[INFO]'+infoLog.caller.name+'() - '+message);
                 }
                 else
                 {
@@ -50,32 +54,70 @@
                 })
                 str=str+']';
                 
-                if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'])
+                if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.debug)
                 {
-                    str='%c[DEBUG]%c '+str;
-                    console.log(str,'color:white;background-color:blue;','color:black;background-color:white;');
+                    console.debug('%c[DEBUG]%c '+str,'color:white;background-color:blue;','color:black;background-color:white;');  
+                }
+                else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.debug)
+                {
+                    console.debug('[DEBUG]'+str);
                 }
                 else
                 {
-                    console.log(str);
+                    console.log('[DEBUG]'+str);
                 }    
             }
         };
         var errorLog=function(message)
         {
-            
-            if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'])
+            if(!console.log)
+                return;
+
+            if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.error)
             {
-                console.log('%c[ERROR]%c '+message,'color:white;background-color:red;','color:black;background-color:white;');    
+                
+                console.error('%c[ERROR]%c '+message,'color:white;background-color:red;','color:black;background-color:white;');  
+                
+            }
+            else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.error)
+            {
+                
+                console.error('[ERROR]'+message);            
             }
             else
             {
-                console.log('[ERROR] '+message);        
+                 console.log('[ERROR]'+message); 
+            }
+                
+        };
+
+         var warningLog=function(message)
+        { 
+            if(!console.log)
+                return;
+
+            if(!DEV_MODE)
+                return;
+            
+            if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.warn)
+            {
+                
+                 console.warn('%c[WARNING]%c '+message,'color:white;background-color:orange;','color:black;background-color:white;');  
+                
+            }
+            else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.warn)
+            {
+                
+                console.warn('[WARNING] '+message);            
+            }
+            else
+            {
+                console.log('[WARNING] '+message); 
             }
                 
             
         };
-        return {info:infoLog,debug:debugLog,error:errorLog};   
+        return {info:infoLog,debug:debugLog,error:errorLog,warn:warningLog};   
     };
     /*logging object*/
     var LOG=new Logger();
@@ -140,6 +182,7 @@
         var label=null;/*this would be <ColumnName>-<RowNumber>*/
         var rowNumber=null;
         var columnName=null;
+        var dataLabel=null;
 
     };
     
@@ -159,7 +202,7 @@
         }
         catch(exception)
         {
-            LOG.error(JSON.stringify(exception));
+            LOG.error(exception.name +" - "+exception.message+" - "+exception.stack);
         }
         
     }
@@ -172,7 +215,7 @@
             /*initiating browser detection*/
              BrowserDetect.init();
              /*init Document Data*/
-             this.initDocumentData();
+            // this.initDocumentData();
             /*this build the dom object and caches this in the jquery object*/
             this.buildCache();
             /*this starts to build up the UI*/
@@ -250,43 +293,30 @@
             /*creating and defining the sheet cell object with null data*/
             cell.data=data;
             cell.rowNumber=row;
-            cell.columnName=getColumnNameForColumnNumber(column);
+            cell.columnName=this.getColumnNameForColumnNumber(column+1);
             cell.lable=cell.columnName+CONSTANTS['CELL_LABEL_SEPARATOR']+cell.rowNumber;
+            cell.dataLabel=row+'-'+column;
             return cell;
         },
         getColumnNameForColumnNumber:function(columnNumber)
         {
             LOG.debug('Entering getColumnNameForColumnNumber() ');
             /*need to revisit this logic as this needs to be optimized*/
-            if(columnNumber<=25)
-            {
-                return CONSTANTS['COLUMN_NAME_CHARACTERS'][columnNumber];
-            }
-            else
-            {
-               var columnName='';
-                i=columnNumber;
-                j=0;
-                while(i>25)
+             columnName='';
+             remainder=0;
+             arrLength=CONSTANTS['COLUMN_NAME_CHARACTERS'].length;
+                while(columnNumber>arrLength)
                 {
-                  j=i%26;
-                  i=parseInt(i/26);
-                  if(i<=26)
-                  {
-                    columnName=columnName+CONSTANTS['COLUMN_NAME_CHARACTERS'][i-1];
-                  }      
-                  else
-                  {
-                    columnName=columnName+this.getColumnNameForColumnNumber(i);
-                  }
-                    
+                    remainder=columnNumber%arrLength;
+                    columnNumber=columnNumber/arrLength;
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
                 }
-              if(j>=0){
-               columnName=columnName+CONSTANTS['COLUMN_NAME_CHARACTERS'][j]; 
-              }
-              
-               return columnName;
-            }
+                if(remainder>0)
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(remainder-1);
+                else
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
+                    
+            return columnName;        
         },
         getColumnNumberForColumnName:function(columnName)
         {
@@ -483,7 +513,7 @@
     $.fn.gridsheet.defaults = {
         width: '100%',
         height: '100%',
-        columns:100,
+        columns:10,
         rows:500,
         _columnWidth:100,
         _rowHeight:30,
