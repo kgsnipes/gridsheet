@@ -215,7 +215,7 @@
             /*initiating browser detection*/
              BrowserDetect.init();
              /*init Document Data*/
-            // this.initDocumentData();
+             this.initDocumentData();
             /*this build the dom object and caches this in the jquery object*/
             this.buildCache();
             /*this starts to build up the UI*/
@@ -320,22 +320,19 @@
         },
         getColumnNumberForColumnName:function(columnName)
         {
-            var number=0;
-            if(columnName.length>=1)
+            var ret=1;
+            if(columnName.length==1)
             {
-              
-              multiplier=1;
-                    for(i=columnName.length-1;i>=0;i--,multiplier+=26)
-                    {
-                        index=CONSTANTS['COLUMN_NAME_CHARACTERS'].findIndex(function(element){return columnName.charAt(i)==element;});
-                      console.log(index);
-                        if(index!=-1)
-                        {
-                            number+=(((index+1)*multiplier)-1);
-                        }
-                    }     
+                ret=CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0));
             }
-            return number;
+            else if(columnName.length>1)
+            {
+                ret+=(26*(CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0))+1));
+                if(columnName.substring(1).length>=1)
+                    ret+=getColumnNumberForColumnName(columnName.substring(1));    
+            }
+            return ret;
+            
         },
         assembleSheetUI:function()
         {
