@@ -14,7 +14,9 @@
     'CHROME_BROWSER':'Chrome',
     'SHEET_PREFIX':'Sheet ',
     'CELL_LABEL_SEPARATOR':'-',
-    'COLUMN_NAME_CHARACTERS':'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    'COLUMN_NAME_CHARACTERS':'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    'OPTIMAL_ROWS':100,
+    'OPTIMAL_COLUMNS':10
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -22,7 +24,7 @@
     function Logger(){
         /*defining DEV mode*/
         var DEV_MODE=true;
-        var DEBUG_MODE=true;
+        var DEBUG_MODE=false;
         var infoLog=function(message)
         {
             if(DEV_MODE)
@@ -214,6 +216,8 @@
              LOG.debug('Entering init() ');
             /*initiating browser detection*/
              BrowserDetect.init();
+             /*check for performance related risks */
+              this.performanceCheckForOptions();
              /*init Document Data*/
              this.initDocumentData();
             /*this build the dom object and caches this in the jquery object*/
@@ -248,6 +252,7 @@
         initDocumentData:function()
         {
             LOG.debug('Entering initDocumentData() ');
+           
             /*creating the document object*/
             this.document=new Document();
             /*initializing the sheets */
@@ -257,13 +262,31 @@
                 /*creating the sheet and populating empty data in the sheets*/
                 this.document.sheets[i]=new Sheet();
                 this.document.sheets[i].name=CONSTANTS['SHEET_PREFIX']+(i+1);
+
                 this.createSheetData(this.document.sheets[i],this.options.rows,this.options.columns);
             }  
+        },
+        performanceCheckForOptions:function()
+        {
+              LOG.debug('Entering performanceCheckForOptions() ');
+              /*assessing the risk on the performance in regards to the options provided for the plugin*/
+              /*we should have optimal number of rows on the sheet - which should be between 100 and 200 on load*/
+              if(this.options.rows>CONSTANTS['OPTIMAL_ROWS'])
+              {
+                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_ROWS']+' or less for reducing the risk on performance');
+              }
+              /*we should have the optimal number of columns on the sheet - which should be between 10-20 on load */
+              if(this.options.columns>CONSTANTS['OPTIMAL_COLUMNS'])
+              {
+                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_COLUMNS']+' or less for reducing the risk on performance');
+              }
+
         },
         createSheetData:function(sheet,rows,columns)
         {
             LOG.debug('Entering createSheetData() ');
             /*creating the sheet data as a 2D array*/
+
             sheet.sheetData=new Array(rows);
             for(i=0;i<sheet.sheetData.length;i++)
             {
@@ -301,7 +324,18 @@
         getColumnNameForColumnNumber:function(columnNumber)
         {
             LOG.debug('Entering getColumnNameForColumnNumber() ');
-            /*need to revisit this logic as this needs to be optimized*/
+            /* deriving the column name from the cloumn number */
+            /*
+                Logic for understanding:
+                - while the columnNumber is less than the number of column labels
+                just keep dividing the columnNumber and append the character at the index(quotient-1) in the column labels list.
+                Also keep storing the remainder(modulo value).
+
+                - if the columnNumber is lesser than the number of column Labels then the logic breaks the loop.
+
+                - if the remainder is greater than zero then append the character at the index(remainder-1) in the column labels list.
+                - if the remainder is lesser or equal to zero then use the character at the index(quotient-1) in the column labels list.
+            */
              columnName='';
              remainder=0;
              arrLength=CONSTANTS['COLUMN_NAME_CHARACTERS'].length;
@@ -320,6 +354,16 @@
         },
         getColumnNumberForColumnName:function(columnName)
         {
+            LOG.debug('Entering getColumnNumberForColumnName() ');
+            /* deriving the column number from column name*/
+            /*
+                Logic for understanding:
+                - if the columnName is of single character in length then return index of the character in the columnLabel list.
+                - else find the index of the character from the left side of the column name and determine the index of the column label and add one. now 
+                multiply the this by length of the columnLabel list. and add it to the return value.
+                - keep calling the same function onto itself till the columnName length is greater than or equal to one as you strip out characters from the left
+                after the previous step. keep adding the result to the return value.
+            */
             var ret=1;
             if(columnName.length==1)
             {
@@ -327,7 +371,7 @@
             }
             else if(columnName.length>1)
             {
-                ret+=(26*(CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0))+1));
+                ret+=(CONSTANTS['COLUMN_NAME_CHARACTERS'].length*(CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0))+1));
                 if(columnName.substring(1).length>=1)
                     ret+=getColumnNumberForColumnName(columnName.substring(1));    
             }
@@ -511,7 +555,7 @@
         width: '100%',
         height: '100%',
         columns:10,
-        rows:500,
+        rows:100,
         _columnWidth:100,
         _rowHeight:30,
         _currentColumnCount:-1,
