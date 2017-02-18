@@ -27,26 +27,31 @@
         var DEBUG_MODE=false;
         var infoLog=function(message)
         {
+            /*info should only be enabled on DEV mode at least for a JS */
             if(DEV_MODE)
             {
+                /* if chrome browser is detected then add styling to the info logging statement*/
                 if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.info)
                 {
                     console.info('%c[INFO]%c '+infoLog.caller.name+'() - '+message,'color:white;background-color:green;','color:black;background-color:white;');    
                 }
+                /* if it is not chrome browser then atleast look for info function and use it*/
                 else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.info)
                 {
                     console.info('[INFO]'+infoLog.caller.name+'() - '+message);
                 }
-                else
+                /* if even info object is not available the just use console.log*/
+                else if(!console.info && console.log)
                 {
                     console.log('[INFO] '+infoLog.caller.name+'() - '+message);        
                 }
-                
+                /* no action performed if even console.log is not available - very bad browser */
             }
             
         };
         var debugLog=function(message)
         {
+            /*should be enabled only on debug mode as this might generate a awful lot of logs. also i have reserved it to be called only by a function*/
             if(DEBUG_MODE && typeof debugLog.caller ==='function')
             {
                 str=debugLog.caller.name+'() - '+message;
@@ -55,7 +60,7 @@
                     str=str+JSON.stringify(debugLog.caller.arguments[index])+' , ';
                 })
                 str=str+']';
-                
+                /* styling the debug statement if this is a chrome browser*/
                 if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.debug)
                 {
                     console.debug('%c[DEBUG]%c '+str,'color:white;background-color:blue;','color:black;background-color:white;');  
@@ -64,59 +69,57 @@
                 {
                     console.debug('[DEBUG]'+str);
                 }
-                else
+                else if(!console.debug && console.log)
                 {
                     console.log('[DEBUG]'+str);
                 }    
+                 /* no action performed if even console.log is not available - very bad browser */
             }
         };
         var errorLog=function(message)
         {
+            /* as it is mandatory to log any errors we first need to know if the browser has support for atleast basic logging*/
             if(!console.log)
                 return;
-
+            /* styling the debug statement if this is a chrome browser*/
             if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.error)
             {
-                
-                console.error('%c[ERROR]%c '+message,'color:white;background-color:red;','color:black;background-color:white;');  
-                
+                console.error('%c[ERROR]%c '+message,'color:white;background-color:red;','color:black;background-color:white;');     
             }
             else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.error)
             {
-                
                 console.error('[ERROR]'+message);            
             }
-            else
+            else if(!console.error && console.log)
             {
                  console.log('[ERROR]'+message); 
             }
+             /* no action performed if even console.log is not available - very bad browser */
                 
         };
 
          var warningLog=function(message)
         { 
+            /* as it is mandatory to log any warning we first need to know if the browser has support for atleast basic logging*/
             if(!console.log)
                 return;
-
+            /* should not be available outside of dev mode*/
             if(!DEV_MODE)
                 return;
-            
+            /* styling the warning statement if this is a chrome browser*/
             if(BrowserDetect.browser==CONSTANTS['CHROME_BROWSER'] && console.warn)
             {
-                
-                 console.warn('%c[WARNING]%c '+message,'color:white;background-color:orange;','color:black;background-color:white;');  
-                
+                console.warn('%c[WARNING]%c '+message,'color:white;background-color:orange;','color:black;background-color:white;');     
             }
             else if(BrowserDetect.browser!=CONSTANTS['CHROME_BROWSER'] && console.warn)
             {
-                
                 console.warn('[WARNING] '+message);            
             }
-            else
+            else if(!console.warn && console.log)
             {
                 console.log('[WARNING] '+message); 
             }
-                
+             /* no action performed if even console.log is not available - very bad browser */
             
         };
         return {info:infoLog,debug:debugLog,error:errorLog,warn:warningLog};   
@@ -125,46 +128,100 @@
     var LOG=new Logger();
     
     /*adding browser detection capability in the plugin*/
+    /*borrowed this from https://gist.github.com/iwanbk/5906833 */
     var BrowserDetect = {
-        init: function () {
-            this.browser = this.searchString(this.dataBrowser) || "Other";
-            this.version = this.searchVersion(navigator.userAgent) || this.searchVersion(navigator.appVersion) || "Unknown";
+        init: function() {
+            this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+            this.version = this.searchVersion(navigator.userAgent) || this.searchVersion(navigator.appVersion) || "an unknown version";
+            this.OS = this.searchString(this.dataOS) || "an unknown OS";
         },
-        searchString: function (data) {
+        searchString: function(data) {
             for (var i = 0; i < data.length; i++) {
                 var dataString = data[i].string;
-                this.versionSearchString = data[i].subString;
-
-                if (dataString.indexOf(data[i].subString) !== -1) {
-                    return data[i].identity;
-                }
+                var dataProp = data[i].prop;
+                this.versionSearchString = data[i].versionSearch || data[i].identity;
+                if (dataString) {
+                    if (dataString.indexOf(data[i].subString) != -1) return data[i].identity;
+                } else if (dataProp) return data[i].identity;
             }
         },
-        searchVersion: function (dataString) {
+        searchVersion: function(dataString) {
             var index = dataString.indexOf(this.versionSearchString);
-            if (index === -1) {
-                return;
-            }
-
-            var rv = dataString.indexOf("rv:");
-            if (this.versionSearchString === "Trident" && rv !== -1) {
-                return parseFloat(dataString.substring(rv + 3));
-            } else {
-                return parseFloat(dataString.substring(index + this.versionSearchString.length + 1));
-            }
+            if (index == -1) return;
+            return parseFloat(dataString.substring(index + this.versionSearchString.length + 1));
         },
+        dataBrowser: [{
+            string: navigator.userAgent,
+            subString: "Chrome",
+            identity: "Chrome"
+        }, {
+            string: navigator.userAgent,
+            subString: "OmniWeb",
+            versionSearch: "OmniWeb/",
+            identity: "OmniWeb"
+        }, {
+            string: navigator.vendor,
+            subString: "Apple",
+            identity: "Safari",
+            versionSearch: "Version"
+        }, {
+            prop: window.opera,
+            identity: "Opera",
+            versionSearch: "Version"
+        }, {
+            string: navigator.vendor,
+            subString: "iCab",
+            identity: "iCab"
+        }, {
+            string: navigator.vendor,
+            subString: "KDE",
+            identity: "Konqueror"
+        }, {
+            string: navigator.userAgent,
+            subString: "Firefox",
+            identity: "Firefox"
+        }, {
+            string: navigator.vendor,
+            subString: "Camino",
+            identity: "Camino"
+        }, { // for newer Netscapes (6+)
+            string: navigator.userAgent,
+            subString: "Netscape",
+            identity: "Netscape"
+        }, {
+            string: navigator.userAgent,
+            subString: "MSIE",
+            identity: "Explorer",
+            versionSearch: "MSIE"
+        }, {
+            string: navigator.userAgent,
+            subString: "Gecko",
+            identity: "Mozilla",
+            versionSearch: "rv"
+        }, { // for older Netscapes (4-)
+            string: navigator.userAgent,
+            subString: "Mozilla",
+            identity: "Netscape",
+            versionSearch: "Mozilla"
+        }],
+        dataOS: [{
+            string: navigator.platform,
+            subString: "Win",
+            identity: "Windows"
+        }, {
+            string: navigator.platform,
+            subString: "Mac",
+            identity: "Mac"
+        }, {
+            string: navigator.userAgent,
+            subString: "iPhone",
+            identity: "iPhone/iPod"
+        }, {
+            string: navigator.platform,
+            subString: "Linux",
+            identity: "Linux"
+        }]
 
-        dataBrowser: [
-            {string: navigator.userAgent, subString: "Edge", identity: "MS Edge"},
-            {string: navigator.userAgent, subString: "MSIE", identity: "Explorer"},
-            {string: navigator.userAgent, subString: "Trident", identity: "Explorer"},
-            {string: navigator.userAgent, subString: "Firefox", identity: "Firefox"},
-            {string: navigator.userAgent, subString: "Opera", identity: "Opera"},  
-            {string: navigator.userAgent, subString: "OPR", identity: "Opera"},  
-
-            {string: navigator.userAgent, subString: "Chrome", identity: "Chrome"}, 
-            {string: navigator.userAgent, subString: "Safari", identity: "Safari"}       
-        ]
     };
     function Document()
     {
