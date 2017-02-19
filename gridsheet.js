@@ -16,7 +16,10 @@
     'CELL_LABEL_SEPARATOR':'-',
     'COLUMN_NAME_CHARACTERS':'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     'OPTIMAL_ROWS':100,
-    'OPTIMAL_COLUMNS':10
+    'OPTIMAL_COLUMNS':10,
+    'DATATYPE_TEXT':'text',
+    'DATATYPE_NUMBER':'number',
+    'DATATYPE_DATE':'date'
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -227,13 +230,20 @@
     {
         var name=null;
         var sheets=null;
-    }
+    };
     /*definition of a sheet*/
     function Sheet()
     {
         var name=null;
         var sheetData=null;
-    }
+    };
+    function CellProperties()
+    {
+        var styleClasses=null;
+        var formula=null;
+        var columnWidth=null;
+        var rowHeight=null;
+    };
     /*definition of a SheetCell*/
     function SheetCell()
     {
@@ -242,10 +252,10 @@
         var rowNumber=null;
         var columnName=null;
         var dataLabel=null;
+        var properties=null;
+        var dataType=null;
 
     };
-    
-   
     
     /*defining the plugin name*/
     var pluginName = 'gridsheet';
@@ -264,7 +274,7 @@
             LOG.error(exception.name +" - "+exception.message+" - "+exception.stack);
         }
         
-    }
+    };
     /*adding functionality to the Plugin function created above*/
     $.extend(Plugin.prototype, {
 
@@ -312,6 +322,9 @@
            
             /*creating the document object*/
             this.document=new Document();
+
+            this.options._currentColumnCount=this.options.columns;
+            this.options._currentRowCount=this.options.rows;
             /*initializing the sheets */
             this.document.sheets=new Array(this.options.sheets);
             for(i=0;i<this.options.sheets;i++)
@@ -362,12 +375,12 @@
                 for(j=0;j<sheetData[i].length;j++)
                 {
                     sheetData[i][j]=new SheetCell();
-                    this.createSheetCellWithData(sheetData[i][j],i,j,'');
+                    this.createSheetCellWithData(sheetData[i][j],i,j,'',CONSTANTS['DATATYPE_TEXT']);
                 }
             }
             return sheetData;
         },
-        createSheetCellWithData:function(cell,row,column,data)
+        createSheetCellWithData:function(cell,row,column,data,dataType)
         {
             LOG.debug('Entering createSheetCellEmptyData() ');
             /*creating and defining the sheet cell object with null data*/
@@ -376,7 +389,20 @@
             cell.columnName=this.getColumnNameForColumnNumber(column+1);
             cell.lable=cell.columnName+CONSTANTS['CELL_LABEL_SEPARATOR']+cell.rowNumber;
             cell.dataLabel=row+'-'+column;
+            cell.dataType=dataType;
+            this.addDefaultPropertiesForSheetCell(cell);
             return cell;
+        },
+        addDefaultPropertiesForSheetCell:function(cell)
+        {
+            props=new CellProperties();
+            props.styleClasses=[];
+            props.styleClasses.push('gridsheet_cell');
+            props.columnWidth=this.options._columnWidth;
+            props.rowHeight=this.options._rowHeight;
+            props.formula=null;
+            cell.properties=props;
+            return props;
         },
         getColumnNameForColumnNumber:function(columnNumber)
         {
@@ -438,12 +464,75 @@
         assembleSheetUI:function()
         {
             LOG.debug('Entering assembleSheetUI() ');
-
-            this.addColumns(this.options.columns);
+            this.renderGutterColumn();
+            this.renderDataColumns();
         },
-        addColumns:function(columnCount)
+        renderGutterColumn:function(){
+             LOG.debug('Entering renderGutterColumn() ');
+            $ul=this.createGridSheetColumn();
+            isFirstRow=true;
+            styleClasses={'styleClasses':['gridsheet_cell','gridsheet_content_align_center']};
+            for(i=0;i<(this.options._currentRowCount+1);i++)
+            {                
+                if(isFirstRow)
+                {
+                    isFirstRow=!isFirstRow;
+                    this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),-i,-1,'',CONSTANTS['DATATYPE_TEXT']),styleClasses);
+                }
+                else
+                {
+                    this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),-i,-1,i,CONSTANTS['DATATYPE_TEXT']),styleClasses);
+                }
+
+            }            
+            
+        },
+        createGridSheetColumn:function(columnNumber)
         {
-           
+            LOG.debug('Entering createGridSheetColumn() ');
+            ul=document.createElement('ul');
+            $ul=$(ul);
+            $ul.addClass('gridsheet_column');
+            $ul.width(this.options._columnWidth);
+            $ul.height(this.options._currentRowCount*this.options._rowHeight);            
+            $ul.data({'columnNumber':columnNumber});            
+            this.$element.append($ul);
+            return $ul;
+        },
+        appendGridSheetCellToColumn:function(list,sheetCell,props)
+        {
+            LOG.debug('Entering appendGridSheetCellToColumn() ');
+            sheetCell.properties=$.extend({}, sheetCell.properties, props);
+            li=document.createElement('li');
+            $li=$(li);
+            this.addPropertiesToGridSheetCellDOM($li,sheetCell);
+            list.append($li);
+        },
+        addPropertiesToGridSheetCellDOM:function(cell,sheetCell)
+        {
+            LOG.debug('Entering addPropertiesToGridSheetCellDOM() ');
+            $li.attr('class',sheetCell.properties.styleClasses.join(' '));
+            $li.data({'data':sheetCell});
+            $li.width(sheetCell.properties.columnWidth);
+            $li.height(sheetCell.properties.rowHeight);
+            this.fillDataForCellDOM(cell,sheetCell);
+             
+        },
+        fillDataForCellDOM:function(cell,sheetCell)
+        {
+            LOG.debug('Entering fillDataForCellDOM() ');
+            switch (sheetCell.dataType) {
+              case CONSTANTS['DATATYPE_NUMBER']:
+                //Statements executed when the result of expression matches value2
+                break;
+              case CONSTANTS['DATATYPE_TEXT']:
+              default:
+                 label=document.createElement('label');
+                 $label=$(label);
+                 $label.text(sheetCell.data);
+                 cell.append($label);
+                break;
+            }
         },
         setDimensionsForContainer:function () {
             LOG.debug('Entering setDimensionsForContainer() ');
@@ -462,8 +551,9 @@
             this.options._width=this.getMeasurementValue(this.options.width);
             this.options._height=this.getMeasurementValue(this.options.height);
             /*fetching the document width and height from the browser*/
-            this.options._documentWidth=$(document).width();
-            this.options._documentHeight=$(document).height();
+            /* reducing 10 percent from the document dimensions*/
+            this.options._documentWidth=$(document).width()-($(document).width()*0.02);
+            this.options._documentHeight=$(document).height()-($(document).height()*0.02);
             /*if the dimension is percentage or em based in the config then convert then to 
                pixel values as pixel values will be the based for all the calculations in this plugin*/
                /*first calculation for the width*/

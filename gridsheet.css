@@ -1,6 +1,6 @@
 .gridsheet
 {
-  border: 1px solid #000;
+  border: 1px solid #ccc;
   width:0px;
   height:0px;
   overflow: auto;
@@ -11,4 +11,31 @@
 	position:absolute;
 	top:0;
 	left:0;
+}
+
+.gridsheet_column
+{
+	list-style: none;
+	margin:0;
+	padding:0;
+}
+
+.gridsheet_cell
+{
+	border:1px solid #888;
+}
+
+.gridsheet_content_align_center
+{
+	text-align: center;
+}
+
+.gridsheet_content_align_left
+{
+	text-align: left;
+}
+
+.gridsheet_content_align_right
+{
+	text-align: right;
 }
