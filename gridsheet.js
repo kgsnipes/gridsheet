@@ -18,6 +18,7 @@
     'OPTIMAL_ROWS':100,
     'OPTIMAL_COLUMNS':10,
     'CELL_CSS_PREFIX':'cell',
+    'SHEET_CSS_PREFIX':'sheet',
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date'
@@ -237,6 +238,10 @@
     {
         var name=null;
         var sheetData=null;
+        var _columnCount=0;
+        var _rowCount=0;
+        var domContainer=null;
+        var sheetNumber=0;
     };
     function CellProperties()
     {
@@ -310,9 +315,8 @@
             this.getInitialMeasurementsForUI();
             /*setting the dimensions for the container*/
             this.setDimensionsForContainer();
-            
             /*creating the table*/
-            this.assembleSheetUI();
+            this.assembleDocumentUI();
             /*hiding the loader*/
             this.loaded();
            
@@ -322,20 +326,30 @@
             LOG.debug('Entering initDocumentData() ');
            
             /*creating the document object*/
-            this.document=new Document();
+            this.documentObj=new Document();
 
-            this.options._currentColumnCount=this.options.columns;
-            this.options._currentRowCount=this.options.rows;
             /*initializing the sheets */
-            this.document.sheets=new Array(this.options.sheets);
+
+            this.documentObj.sheets=new Array(this.options.sheets);
+            
             for(i=0;i<this.options.sheets;i++)
             {
-                /*creating the sheet and populating empty data in the sheets*/
-                this.document.sheets[i]=new Sheet();
-                this.document.sheets[i].name=CONSTANTS['SHEET_PREFIX']+(i+1);
-
-                this.createSheetData(this.document.sheets[i],this.options.rows,this.options.columns);
+                
+                this.documentObj.sheets[i]=this.createSheetObj(i,this.options.rows,this.options.columns);
+                
             }  
+           
+        },
+        createSheetObj:function(sheetNum,rows,columns)
+        {
+            /*creating the sheet and populating empty data in the sheets*/
+                sheet=new Sheet();
+                sheet.name=CONSTANTS['SHEET_PREFIX']+(sheetNum+1);
+                sheet._columnCount=columns;
+                sheet._rowCount=rows;
+                sheet.sheetNumber=sheetNum+1;
+                sheet.sheetData=this.createSheetData(sheet,rows,columns);
+                return sheet;
         },
         performanceCheckForOptions:function()
         {
@@ -375,8 +389,8 @@
             {
                 for(j=0;j<sheetData[i].length;j++)
                 {
-                    sheetData[i][j]=new SheetCell();
-                    this.createSheetCellWithData(sheetData[i][j],i,j,'',CONSTANTS['DATATYPE_TEXT']);
+                    sheetData[i][j]=this.createSheetCellWithData(new SheetCell(),i,j,'',CONSTANTS['DATATYPE_TEXT']);
+                    
                 }
             }
             return sheetData;
@@ -391,7 +405,7 @@
             cell.lable=cell.columnName+CONSTANTS['CELL_LABEL_SEPARATOR']+cell.rowNumber;
             cell.dataLabel=row+'-'+column;
             cell.dataType=dataType;
-            this.addDefaultPropertiesForSheetCell(cell);
+            cell.properties=this.addDefaultPropertiesForSheetCell(cell);
             return cell;
         },
         addDefaultPropertiesForSheetCell:function(cell)
@@ -462,18 +476,42 @@
             return ret;
             
         },
-        assembleSheetUI:function()
+        assembleDocumentUI:function()
         {
             LOG.debug('Entering assembleSheetUI() ');
-            this.renderGutterColumn();
-            //this.renderDataColumns();
+            
+            for(sheet in this.documentObj.sheets)
+            {
+                this.assembleSheetUI(this.documentObj.sheets[sheet]);
+            }
         },
-        renderGutterColumn:function(){
+        assembleSheetUI:function(sheet)
+        {
+            this.createSheetDomContainer(sheet);
+            this.renderGutterColumn(sheet);
+            //this.renderDataColumns(sheet);
+            
+
+        },
+        createSheetDomContainer:function(sheet)
+        {
+            sheetDom=document.createElement('div');
+            $sheet=$(sheetDom);
+            $sheet.width(this.$element.width()-(this.$element.width()*0.005));
+            $sheet.height(this.$element.height()-(this.$element.height()*0.05));
+            $sheet.addClass('gridsheet_sheet');
+            $sheet.addClass(sheet.name);
+            this.$element.append($sheet);
+            sheet.domContainer=$sheet;
+            return $sheet;
+
+        },
+        renderGutterColumn:function(sheet){
              LOG.debug('Entering renderGutterColumn() ');
-            $ul=this.createGridSheetColumn();
+            $ul=this.createGridSheetColumn(sheet,-1);
             isFirstRow=true;
             styleClasses={'styleClasses':['gridsheet_cell','gridsheet_content_align_center']};
-            for(i=0;i<(this.options._currentRowCount+1);i++)
+            for(i=0;i<(sheet._rowCount+1);i++)
             {                
                 if(isFirstRow)
                 {
@@ -488,7 +526,7 @@
             }            
             
         },
-        createGridSheetColumn:function(columnNumber)
+        createGridSheetColumn:function(sheet,columnNumber)
         {
             LOG.debug('Entering createGridSheetColumn() ');
             ul=document.createElement('ul');
@@ -497,7 +535,7 @@
             $ul.width(this.options._columnWidth);
             $ul.height(this.options._currentRowCount*this.options._rowHeight);            
             $ul.data({'columnNumber':columnNumber});            
-            this.$element.append($ul);
+            sheet.domContainer.append($ul);
             return $ul;
         },
         appendGridSheetCellToColumn:function(list,sheetCell,props)
@@ -513,7 +551,7 @@
         {
             LOG.debug('Entering addPropertiesToGridSheetCellDOM() ');
             $li.attr('class',sheetCell.properties.styleClasses.join(' '));
-            $li.addClass(+sheetCell.dataLabel);
+            $li.addClass(CONSTANTS['CELL_CSS_PREFIX']+sheetCell.dataLabel);
             $li.data({'data':sheetCell});
             $li.width(sheetCell.properties.columnWidth);
             $li.height(sheetCell.properties.rowHeight);
@@ -707,10 +745,6 @@
         rows:100,
         _columnWidth:100,
         _rowHeight:30,
-        _currentColumnCount:-1,
-        _currentRowCount:-1,
-        _currentColumnLabel:null,
-        _currentSheetCount:-1,
         sheets:3,
         onComplete: null
     };

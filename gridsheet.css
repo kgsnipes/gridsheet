@@ -8,7 +8,7 @@
 
 .gridsheet_loader
 {
-	position:absolute;
+	position:relative;
 	top:0;
 	left:0;
 }
@@ -38,4 +38,15 @@
 .gridsheet_content_align_right
 {
 	text-align: right;
+}
+
+.gridsheet_sheet
+{
+	margin:0;
+	padding:0;
+	border:1px solid #888;
+	overflow:auto;
+	top:0;
+	left:0;
+	position: relative;
 }
