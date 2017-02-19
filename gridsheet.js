@@ -17,6 +17,7 @@
     'COLUMN_NAME_CHARACTERS':'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     'OPTIMAL_ROWS':100,
     'OPTIMAL_COLUMNS':10,
+    'CELL_CSS_PREFIX':'cell',
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date'
@@ -465,7 +466,7 @@
         {
             LOG.debug('Entering assembleSheetUI() ');
             this.renderGutterColumn();
-            this.renderDataColumns();
+            //this.renderDataColumns();
         },
         renderGutterColumn:function(){
              LOG.debug('Entering renderGutterColumn() ');
@@ -512,6 +513,7 @@
         {
             LOG.debug('Entering addPropertiesToGridSheetCellDOM() ');
             $li.attr('class',sheetCell.properties.styleClasses.join(' '));
+            $li.addClass(+sheetCell.dataLabel);
             $li.data({'data':sheetCell});
             $li.width(sheetCell.properties.columnWidth);
             $li.height(sheetCell.properties.rowHeight);
