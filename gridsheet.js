@@ -329,21 +329,24 @@
             this.documentObj=new Document();
 
             /*initializing the sheets */
-
-            this.documentObj.sheets=new Array(this.options.sheets);
+            this.documentObj.sheets=[];
             
-            for(i=0;i<this.options.sheets;i++)
+            var i=0;
+            while(i<this.options.sheets)
             {
-                
-                this.documentObj.sheets[i]=this.createSheetObj(i,this.options.rows,this.options.columns);
-                
-            }  
-           
+                LOG.info('Creating empty sheet data for sheet number - ' +(i+1));
+                this.documentObj.sheets.push(this.createSheetObj(i,this.options.rows,this.options.columns));      
+                i++;
+            }
+            console.log(this.documentObj.sheets);
+            
         },
         createSheetObj:function(sheetNum,rows,columns)
         {
+            LOG.debug('Entering createSheetObj() ');
             /*creating the sheet and populating empty data in the sheets*/
-                sheet=new Sheet();
+            
+                var sheet=new Sheet();
                 sheet.name=CONSTANTS['SHEET_PREFIX']+(sheetNum+1);
                 sheet._columnCount=columns;
                 sheet._rowCount=rows;
@@ -372,14 +375,14 @@
             LOG.debug('Entering createSheetData() ');
             /*creating the sheet data as a 2D array*/
 
-            sheet.sheetData=new Array(rows);
-            for(i=0;i<sheet.sheetData.length;i++)
+            var sheetData=new Array(rows);
+            for(i=0;i<rows;i++)
             {
-                sheet.sheetData[i]=new Array(columns);
+                sheetData[i]=new Array(columns);
             }
             /*creating empty data in the cells.*/
-            this.feedEmptyDataIntoNewCellsForSheet(sheet.sheetData);
-            return sheet.sheetData;
+            sheetData= this.feedEmptyDataIntoNewCellsForSheet(sheetData);
+            return sheetData;
         },
         feedEmptyDataIntoNewCellsForSheet:function(sheetData)
         {
@@ -389,7 +392,8 @@
             {
                 for(j=0;j<sheetData[i].length;j++)
                 {
-                    sheetData[i][j]=this.createSheetCellWithData(new SheetCell(),i,j,'',CONSTANTS['DATATYPE_TEXT']);
+                    var cell=new SheetCell();
+                    sheetData[i][j]=this.createSheetCellWithData(cell,i,j,'',CONSTANTS['DATATYPE_TEXT']);
                     
                 }
             }
@@ -410,13 +414,12 @@
         },
         addDefaultPropertiesForSheetCell:function(cell)
         {
-            props=new CellProperties();
+            var props=new CellProperties();
             props.styleClasses=[];
             props.styleClasses.push('gridsheet_cell');
             props.columnWidth=this.options._columnWidth;
             props.rowHeight=this.options._rowHeight;
             props.formula=null;
-            cell.properties=props;
             return props;
         },
         getColumnNameForColumnNumber:function(columnNumber)
@@ -480,9 +483,9 @@
         {
             LOG.debug('Entering assembleSheetUI() ');
             
-            for(sheet in this.documentObj.sheets)
+            for(var i=0;i<this.documentObj.sheets.length;i++)
             {
-                this.assembleSheetUI(this.documentObj.sheets[sheet]);
+                this.assembleSheetUI(this.documentObj.sheets[i]);
             }
         },
         assembleSheetUI:function(sheet)
