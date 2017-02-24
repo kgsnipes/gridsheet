@@ -4,6 +4,7 @@
   width:0px;
   height:0px;
   overflow: auto;
+  position: relative;
 }
 
 .gridsheet_loader
@@ -48,5 +49,10 @@
 	overflow:auto;
 	top:0;
 	left:0;
-	position: relative;
+	position: absolute;
+}
+
+.gridsheet_sheet_hide
+{
+	display: none;
 }

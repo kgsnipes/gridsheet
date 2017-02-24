@@ -18,6 +18,7 @@
     'OPTIMAL_ROWS':100,
     'OPTIMAL_COLUMNS':10,
     'CELL_CSS_PREFIX':'cell',
+    'CSS_NAMING_SEPARATOR':'_',
     'SHEET_CSS_PREFIX':'sheet',
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
@@ -369,6 +370,7 @@
                 LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_COLUMNS']+' or less for reducing the risk on performance');
               }
 
+
         },
         createSheetData:function(sheet,rows,columns)
         {
@@ -482,7 +484,7 @@
         assembleDocumentUI:function()
         {
             LOG.debug('Entering assembleSheetUI() ');
-            
+            var firstSheet=true;
             for(var i=0;i<this.documentObj.sheets.length;i++)
             {
                 this.assembleSheetUI(this.documentObj.sheets[i]);
@@ -492,6 +494,7 @@
         {
             this.createSheetDomContainer(sheet);
             this.renderGutterColumn(sheet);
+            
             //this.renderDataColumns(sheet);
             
 
@@ -500,10 +503,14 @@
         {
             sheetDom=document.createElement('div');
             $sheet=$(sheetDom);
-            $sheet.width(this.$element.width()-(this.$element.width()*0.005));
-            $sheet.height(this.$element.height()-(this.$element.height()*0.05));
+            $sheet.width(this.options._width-(this.options._width*0.005));
+            $sheet.height(this.options._height-(this.options._height*0.05));
+            if(sheet.sheetNumber>1)
+            {
+                $sheet.addClass('gridsheet_sheet_hide');
+            }
             $sheet.addClass('gridsheet_sheet');
-            $sheet.addClass(sheet.name);
+            $sheet.addClass(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR']+sheet.sheetNumber);
             this.$element.append($sheet);
             sheet.domContainer=$sheet;
             return $sheet;
@@ -580,6 +587,8 @@
         setDimensionsForContainer:function () {
             LOG.debug('Entering setDimensionsForContainer() ');
             /*setting the dimension for the container after calculation*/
+            LOG.info('container width '+ this.options._width);
+            LOG.info('container height '+this.options._height);
           this.$element.width(this.options._width);
           this.$element.height(this.options._height);  
         },
@@ -602,7 +611,7 @@
                /*first calculation for the width*/
             if(this.isPercentageValue(this.options.width))
             {
-                this.options._width=this.getFloatValue((this.options._documentWidth/this.options._width)*100);
+                this.options._width=this.getFloatValue((this.options._width/100)*this.options._documentWidth);
             }
             else if(this.isEmValue(this.options.width))
             {
@@ -611,7 +620,7 @@
             /*now calculation for the height*/
             if(this.isPercentageValue(this.options.height))
             {
-               this.options._height=this.getFloatValue((this.options._documentHeight/this.options._height)*100);
+               this.options._height=this.getFloatValue((this.options._height/100)*this.options._documentHeight);
             }
             else if(this.isEmValue(this.options.height))
             {
@@ -742,8 +751,8 @@
     };
     /*defining the default options for gridsheet*/
     $.fn.gridsheet.defaults = {
-        width: '100%',
-        height: '100%',
+        width: '80%',
+        height: '80%',
         columns:10,
         rows:100,
         _columnWidth:100,
