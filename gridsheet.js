@@ -317,7 +317,7 @@
             /*setting the dimensions for the container*/
             this.setDimensionsForContainer();
             /*creating the table*/
-            this.assembleDocumentUI();
+            this.generateDocumentUI();
             /*hiding the loader*/
             this.loaded();
            
@@ -332,6 +332,7 @@
             /*initializing the sheets */
             this.documentObj.sheets=[];
             
+            /*creating sheet data for the document*/
             var i=0;
             while(i<this.options.sheets)
             {
@@ -339,7 +340,7 @@
                 this.documentObj.sheets.push(this.createSheetObj(i,this.options.rows,this.options.columns));      
                 i++;
             }
-            console.log(this.documentObj.sheets);
+            LOG.info('Finished creating the sheet data for the document');
             
         },
         createSheetObj:function(sheetNum,rows,columns)
@@ -352,6 +353,7 @@
                 sheet._columnCount=columns;
                 sheet._rowCount=rows;
                 sheet.sheetNumber=sheetNum+1;
+                /*creating the 2D array for holding cell data*/
                 sheet.sheetData=this.createSheetData(sheet,rows,columns);
                 return sheet;
         },
@@ -419,6 +421,7 @@
             var props=new CellProperties();
             props.styleClasses=[];
             props.styleClasses.push('gridsheet_cell');
+            /*assigning the calculated width and height to the cell data as properties for the cell*/
             props.columnWidth=this.options._columnWidth;
             props.rowHeight=this.options._rowHeight;
             props.formula=null;
@@ -481,19 +484,21 @@
             return ret;
             
         },
-        assembleDocumentUI:function()
+        generateDocumentUI:function()
         {
-            LOG.debug('Entering assembleSheetUI() ');
+            LOG.debug('Entering generateDocumentUI() ');
             var firstSheet=true;
+            /*iterating through sheets to create the DOM structure for every sheet*/
             for(var i=0;i<this.documentObj.sheets.length;i++)
             {
-                this.assembleSheetUI(this.documentObj.sheets[i]);
+                this.generateSheetUI(this.documentObj.sheets[i]);
             }
         },
-        assembleSheetUI:function(sheet)
+        generateSheetUI:function(sheet)
         {
+            LOG.debug('Entering generateSheetUI() ');
             this.createSheetDomContainer(sheet);
-            this.renderGutterColumn(sheet);
+            this.generateGutterColumn(sheet);
             
             //this.renderDataColumns(sheet);
             
@@ -501,28 +506,34 @@
         },
         createSheetDomContainer:function(sheet)
         {
+            LOG.debug('Entering createSheetDomContainer() ');
+            /*creating DIV container for each sheet*/
             sheetDom=document.createElement('div');
             $sheet=$(sheetDom);
             $sheet.width(this.options._width-(this.options._width*0.005));
             $sheet.height(this.options._height-(this.options._height*0.05));
+            /*first sheet should not be hidden from the view, others should be hidden*/
             if(sheet.sheetNumber>1)
             {
                 $sheet.addClass('gridsheet_sheet_hide');
             }
+            /* adding styling to the cell*/
             $sheet.addClass('gridsheet_sheet');
             $sheet.addClass(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR']+sheet.sheetNumber);
             this.$element.append($sheet);
+            /*associating DOM container with the sheet*/
             sheet.domContainer=$sheet;
             return $sheet;
 
         },
-        renderGutterColumn:function(sheet){
-             LOG.debug('Entering renderGutterColumn() ');
+        generateGutterColumn:function(sheet){
+             LOG.debug('Entering generateGutterColumn() ');
             $ul=this.createGridSheetColumn(sheet,-1);
             isFirstRow=true;
+            /*styling for the gutter column needs to be different to make them look different than the actual cells on the sheet*/
             styleClasses={'styleClasses':['gridsheet_cell','gridsheet_content_align_center']};
             for(i=0;i<(sheet._rowCount+1);i++)
-            {                
+            {   /*the first cell on the gutter column does not have a label*/             
                 if(isFirstRow)
                 {
                     isFirstRow=!isFirstRow;
