@@ -22,7 +22,8 @@
     'SHEET_CSS_PREFIX':'sheet',
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
-    'DATATYPE_DATE':'date'
+    'DATATYPE_DATE':'date',
+    'SHEET_BUTTON_WIDTH':100 /*100 pixels*/
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -497,12 +498,36 @@
         generateSheetUI:function(sheet)
         {
             LOG.debug('Entering generateSheetUI() ');
+            /*creates the DOM container for the a sheet in the document*/
             this.createSheetDomContainer(sheet);
+            /*creating the sheet button that helps a user switch from one sheet to another*/
+            this.createSheetTabButton(sheet);
+            /* generate the gutter column*/
             this.generateGutterColumn(sheet);
             
             //this.renderDataColumns(sheet);
             
 
+        },
+        createSheetTabButton:function(sheet)
+        {
+            LOG.debug('Entering createSheetTabButton() ');
+            button=document.createElement('button');
+            $button=$(button);
+            $button.addClass('gridsheet_sheet_tab_button');
+            $button.text(sheet.name);
+            /* on initial load the first sheet will be active others inactive*/
+            if(sheet.sheetNumber>1)
+            {
+                 $button.addClass('gridsheet_sheet_tab_button_inactive');
+            }
+            else
+            {
+                 $button.addClass('gridsheet_sheet_tab_button_active');
+            }
+            /*positioning the button to stick to the sheet this sheet navigation button is for*/
+            $button.css({'top':(sheet.domContainer.height()+1),'left':((sheet.sheetNumber-1)*CONSTANTS['SHEET_BUTTON_WIDTH'])});
+            sheet.domContainer.after($button);
         },
         createSheetDomContainer:function(sheet)
         {

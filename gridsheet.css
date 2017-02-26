@@ -12,6 +12,10 @@
 	position:relative;
 	top:0;
 	left:0;
+	background-color: white;
+	font-size: 16px;
+	border:1px solid #ccc;
+	width:5%;
 }
 
 .gridsheet_column
@@ -50,6 +54,25 @@
 	top:0;
 	left:0;
 	position: absolute;
+}
+
+.gridsheet_sheet_tab_button
+{
+	border:1px solid #888;
+	text-overflow: ellipsis;
+	position:absolute;
+	width:99px;
+	height:20px;
+}
+
+.gridsheet_sheet_tab_button_active
+{
+	background-color: white;
+}
+
+.gridsheet_sheet_tab_button_inactive
+{
+	background-color: #ccc;
 }
 
 .gridsheet_sheet_hide
