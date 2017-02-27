@@ -501,7 +501,7 @@
             /*creates the DOM container for the a sheet in the document*/
             this.createSheetDomContainer(sheet);
             /*creating the sheet button that helps a user switch from one sheet to another*/
-            this.createSheetTabButton(sheet);
+            this.createSheetNavigationButton(sheet);
             /* generate the gutter column*/
             this.generateGutterColumn(sheet);
             
@@ -509,13 +509,14 @@
             
 
         },
-        createSheetTabButton:function(sheet)
+        createSheetNavigationButton:function(sheet)
         {
             LOG.debug('Entering createSheetTabButton() ');
             button=document.createElement('button');
-            $button=$(button);
+            var $button=$(button);
             $button.addClass('gridsheet_sheet_tab_button');
             $button.text(sheet.name);
+            $button.attr('sheetnumber',sheet.sheetNumber);
             /* on initial load the first sheet will be active others inactive*/
             if(sheet.sheetNumber>1)
             {
@@ -527,7 +528,63 @@
             }
             /*positioning the button to stick to the sheet this sheet navigation button is for*/
             $button.css({'top':(sheet.domContainer.height()+1),'left':((sheet.sheetNumber-1)*CONSTANTS['SHEET_BUTTON_WIDTH'])});
+            this.addEventHandlersForSheetNavigationButtons($button);
             sheet.domContainer.after($button);
+        },
+        addEventHandlersForSheetNavigationButtons:function(button)
+        {
+            LOG.debug('Entering addEventHandlersForSheetNavigationButtons() ');
+            /*click handler for the sheet navigation button*/
+            var self=this;
+             button.click(function(event){self.createSheetNavigationButtonClickEventHandler(event,self);});
+             button.dblclick(function(event){self.createSheetNavigationButtonDblClickEventHandler(event,self);});
+             /*this function could also accomodate other event handlers as required*/
+        },
+        createSheetNavigationButtonDblClickEventHandler:function(event,self)
+        {
+            LOG.debug('Entering createSheetNavigationButtonDblClickEventHandler() ');
+            var textbox=document.createElement('input');
+            textbox.type='text';
+            textbox.value=$(event.target).text();
+            $textbox=$(textbox);
+            $textbox.width($(event.target).width()-1).height($(event.target).height()-1);
+            $textbox.attr("sheetnumber",$(event.target).attr("sheetNumber"));
+            $(event.target).text('');
+            self.addEventHandlersForSheetNameTextbox($textbox);
+            $(event.target).append($textbox);
+            $textbox.focus();
+
+        },
+        addEventHandlersForSheetNameTextbox:function(textbox)
+        {
+            var self=this;
+            textbox.focusout(function(event){self.sheetNameTextBoxFocusOutEventHandler(event,self);});
+
+        },
+        sheetNameTextBoxFocusOutEventHandler:function(event,self)
+        {
+            var text=$(event.target).val();
+            $(event.target).parent().text(text);
+            console.log($(event.target).attr("sheetnumber"));
+            var sheetNumber=parseInt($(event.target).attr('sheetnumber'));
+            console.log(sheetNumber-1);
+            self.documentObj.sheets[sheetNumber-1].name=text;
+            LOG.info('New Name for the sheet is :'+self.documentObj.sheets[sheetNumber-1].name);
+            $(event.target).unbind().remove();
+        },
+        createSheetNavigationButtonClickEventHandler:function(event,self)
+        {
+            LOG.debug('Entering createSheetNavigationButtonClickEventHandler() ');
+            
+            if($(event.target).hasClass('gridsheet_sheet_tab_button_inactive'))
+            {
+                $('.gridsheet_sheet').hide();
+                $('.gridsheet_sheet_tab_button_active').addClass('gridsheet_sheet_tab_button_inactive').removeClass('gridsheet_sheet_tab_button_active');
+                $(event.target).prev().show();
+                $(event.target).addClass('gridsheet_sheet_tab_button_active').removeClass('gridsheet_sheet_tab_button_inactive');
+
+            }
+
         },
         createSheetDomContainer:function(sheet)
         {
@@ -548,6 +605,7 @@
             this.$element.append($sheet);
             /*associating DOM container with the sheet*/
             sheet.domContainer=$sheet;
+            $sheet.data(sheet);
             return $sheet;
 
         },
@@ -754,10 +812,10 @@
             LOG.debug('Entering bindEvents() ');
             var plugin = this;
 
-            plugin.$element.on('click' + '.' + plugin._name, function() {
+            /*plugin.$element.on('click' + '.' + plugin._name, function() {
                 LOG.info('clicked the component');
-               /* plugin.someOtherFunction.call(plugin);*/
-            });
+                plugin.someOtherFunction.call(plugin);
+            });*/
         },
         /*Unbind events that trigger methods*/
         unbindEvents: function() {
