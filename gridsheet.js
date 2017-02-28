@@ -542,45 +542,75 @@
         },
         createSheetNavigationButtonDblClickEventHandler:function(event,self)
         {
+            /*handling the doulble click event for the sheet name change when the sheet navigation button is clicked*/
             LOG.debug('Entering createSheetNavigationButtonDblClickEventHandler() ');
+            /*create a input of type text*/
             var textbox=document.createElement('input');
             textbox.type='text';
+            /*copy the value of the sheet name on the sheet navigation button*/
             textbox.value=$(event.target).text();
             $textbox=$(textbox);
+            /*setting the dimensions for the textbox being added*/
             $textbox.width($(event.target).width()-1).height($(event.target).height()-1);
+            /*setting the sheet number to the textbox for referencing the sheet in the documentObj and update the name*/
             $textbox.attr("sheetnumber",$(event.target).attr("sheetNumber"));
+            /*empty the text in the sheet navigation button to make space for the textbox to be added*/
             $(event.target).text('');
+            /* adding the event handler for the textbox*/
             self.addEventHandlersForSheetNameTextbox($textbox);
+            /* appending the textbox to the sheet navigation button*/
             $(event.target).append($textbox);
+            /*setting the focus to the textbox for the user to edit the sheet name*/
             $textbox.focus();
 
         },
         addEventHandlersForSheetNameTextbox:function(textbox)
         {
+            LOG.debug('Entering addEventHandlersForSheetNameTextbox() ');
             var self=this;
+            /* adding the event handler for the text box when the focus goes out from the textbox. this is the event where we update the sheet name */
             textbox.focusout(function(event){self.sheetNameTextBoxFocusOutEventHandler(event,self);});
 
         },
         sheetNameTextBoxFocusOutEventHandler:function(event,self)
         {
+            LOG.debug('Entering sheetNameTextBoxFocusOutEventHandler() ');
+            /* fetching the new value from the textbox.*/
             var text=$(event.target).val();
-            $(event.target).parent().text(text);
-            console.log($(event.target).attr("sheetnumber"));
+            /*fetching the old value for the sheet name*/
+            var oldValue=$(event.target).parent().text();
+            LOG.info('Sheet number where name is being changed :'+$(event.target).attr("sheetnumber"));
             var sheetNumber=parseInt($(event.target).attr('sheetnumber'));
-            console.log(sheetNumber-1);
-            self.documentObj.sheets[sheetNumber-1].name=text;
-            LOG.info('New Name for the sheet is :'+self.documentObj.sheets[sheetNumber-1].name);
-            $(event.target).unbind().remove();
+            /*updating the sheet name in the documentObj by validating if the sheetnumber was a valid sheet number*/
+            if(sheetNumber>0 && sheetNumber<=self.documentObj.sheets.length)
+            {
+                self.documentObj.sheets[sheetNumber-1].name=text;
+                LOG.info('New Name for the sheet is :'+self.documentObj.sheets[sheetNumber-1].name);
+                $(event.target).parent().text(text);
+                
+            }
+            else
+            {
+                /*if the sheet number is invalid then restoring the old name for the sheet navigation button*/
+                $(event.target).parent().text(oldValue);
+                LOG.error("Cannot update the Name for sheet number less than 1");
+            }
+            /*unbind the event handler for the textbox for editing the sheet name and removing the textbox after updation of the sheet name*/
+            $(event.target).unbind().remove();            
         },
         createSheetNavigationButtonClickEventHandler:function(event,self)
         {
             LOG.debug('Entering createSheetNavigationButtonClickEventHandler() ');
-            
+            /* if the sheet navigation button is inactive then change it to active and show the corresponding sheet. also hide the other sheets from view*/
             if($(event.target).hasClass('gridsheet_sheet_tab_button_inactive'))
             {
+                /*hiding all the sheets*/
                 $('.gridsheet_sheet').hide();
+                /*setting all the sheet navigation buttons to inactive*/
                 $('.gridsheet_sheet_tab_button_active').addClass('gridsheet_sheet_tab_button_inactive').removeClass('gridsheet_sheet_tab_button_active');
+                /*showing the current selected sheet in view*/
                 $(event.target).prev().show();
+                /*setting the current sheet navigation button to active styling*/
                 $(event.target).addClass('gridsheet_sheet_tab_button_active').removeClass('gridsheet_sheet_tab_button_inactive');
 
             }
@@ -592,6 +622,7 @@
             /*creating DIV container for each sheet*/
             sheetDom=document.createElement('div');
             $sheet=$(sheetDom);
+            /*setting dimensions for the sheet dom container*/
             $sheet.width(this.options._width-(this.options._width*0.005));
             $sheet.height(this.options._height-(this.options._height*0.05));
             /*first sheet should not be hidden from the view, others should be hidden*/
