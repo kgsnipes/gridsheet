@@ -23,11 +23,19 @@
 	list-style: none;
 	margin:0;
 	padding:0;
+	position: absolute;
+	top:0;
 }
 
 .gridsheet_cell
 {
 	border:1px solid #888;
+}
+
+.gridsheet_gutter
+{
+	background-color: #ccc;
+	font-weight: bold;
 }
 
 .gridsheet_content_align_center

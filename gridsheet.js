@@ -505,8 +505,19 @@
             /* generate the gutter column*/
             this.generateGutterColumn(sheet);
             
-            //this.renderDataColumns(sheet);
+            this.renderDataColumns(sheet);
             
+
+        },
+        renderDataColumns:function(sheet)
+        {
+            var styleClasses={'styleClasses':['gridsheet_cell']};
+            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
+            
+            for(var i=0;i<sheet._columnCount;i++)
+            {
+                 this.generateColumn(sheet,i,styleClassesForFirstCell,styleClasses);
+            }
 
         },
         createSheetNavigationButton:function(sheet)
@@ -641,25 +652,46 @@
 
         },
         generateGutterColumn:function(sheet){
-             LOG.debug('Entering generateGutterColumn() ');
-            $ul=this.createGridSheetColumn(sheet,-1);
+            
+            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
+            this.generateColumn(sheet,-1,styleClassesForFirstCell,styleClassesForFirstCell);
+        },
+        generateColumn:function(sheet,columnNumber,styleClassesForFirstCell,styleClassesForCell){
+             LOG.debug('Entering generateColumn() ');
+            $ul=this.createGridSheetColumn(sheet,columnNumber);
             isFirstRow=true;
             /*styling for the gutter column needs to be different to make them look different than the actual cells on the sheet*/
-            styleClasses={'styleClasses':['gridsheet_cell','gridsheet_content_align_center']};
+            
             for(i=0;i<(sheet._rowCount+1);i++)
             {   /*the first cell on the gutter column does not have a label*/             
                 if(isFirstRow)
                 {
                     isFirstRow=!isFirstRow;
-                    this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),-i,-1,'',CONSTANTS['DATATYPE_TEXT']),styleClasses);
+                    if(columnNumber<0)
+                    {
+                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
+                    }
+                    else
+                    {
+                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,this.getColumnNameForColumnNumber(columnNumber+1),CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
+                    }
+                    
                 }
                 else
                 {
-                    this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),-i,-1,i,CONSTANTS['DATATYPE_TEXT']),styleClasses);
+                    if(columnNumber<0)
+                    {
+                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,i,CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
+                    }
+                    else
+                    {
+                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'sample',CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
+                    }
+                    
                 }
 
             }            
-            
+            return $ul;
         },
         createGridSheetColumn:function(sheet,columnNumber)
         {
@@ -671,6 +703,14 @@
             $ul.height(this.options._currentRowCount*this.options._rowHeight);            
             $ul.data({'columnNumber':columnNumber});            
             sheet.domContainer.append($ul);
+            if(columnNumber<0)
+            {
+                $ul.css({'left':'0px'});
+            }
+            else
+            {
+                $ul.css({'left':(((columnNumber+1)*this.options._columnWidth)+1)+'px'});
+            }
             return $ul;
         },
         appendGridSheetCellToColumn:function(list,sheetCell,props)
