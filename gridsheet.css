@@ -1,6 +1,6 @@
 .gridsheet
 {
-  border: 1px solid #ccc;
+  border: 1px solid #fff;
   width:0px;
   height:0px;
   overflow: auto;
@@ -86,4 +86,11 @@
 .gridsheet_sheet_hide
 {
 	display: none;
+}
+
+.gridsheet_cell_textarea
+{
+	margin: 0;
+	padding: 0;
+	resize:none;
 }

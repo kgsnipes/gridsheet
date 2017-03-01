@@ -708,7 +708,7 @@
             }
             else
             {
-                $ul.css({'left':(((columnNumber+1)*this.options._columnWidth)+1)+'px'});
+                $ul.css({'left':(((columnNumber+1)*this.options._columnWidth))+'px'});
             }
             return $ul;
         },
@@ -757,7 +757,7 @@
                 }
                 else
                 {
-                    $cellDom.val(sheetCell.data).css({'resize':'none'});
+                    $cellDom.val(sheetCell.data).addClass('gridsheet_cell_textarea');
                     
                 }
                  $cellDom.width(cell.width()-1).height(cell.height()-1);
