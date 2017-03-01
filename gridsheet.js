@@ -597,8 +597,7 @@
             {
                 self.documentObj.sheets[sheetNumber-1].name=text;
                 LOG.info('New Name for the sheet is :'+self.documentObj.sheets[sheetNumber-1].name);
-                $(event.target).parent().text(text);
-                
+                $(event.target).parent().text(text);    
             }
             else
             {
@@ -685,7 +684,7 @@
                     }
                     else
                     {
-                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'sample',CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
+                        this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
                     }
                     
                 }
@@ -725,11 +724,11 @@
         addPropertiesToGridSheetCellDOM:function(cell,sheetCell)
         {
             LOG.debug('Entering addPropertiesToGridSheetCellDOM() ');
-            $li.attr('class',sheetCell.properties.styleClasses.join(' '));
-            $li.addClass(CONSTANTS['CELL_CSS_PREFIX']+sheetCell.dataLabel);
-            $li.data({'data':sheetCell});
-            $li.width(sheetCell.properties.columnWidth);
-            $li.height(sheetCell.properties.rowHeight);
+            cell.attr('class',sheetCell.properties.styleClasses.join(' '));
+            cell.addClass(CONSTANTS['CELL_CSS_PREFIX']+sheetCell.dataLabel);
+            cell.data({'data':sheetCell});
+            cell.width(sheetCell.properties.columnWidth-1);
+            cell.height(sheetCell.properties.rowHeight-1);
             this.fillDataForCellDOM(cell,sheetCell);
              
         },
@@ -742,10 +741,27 @@
                 break;
               case CONSTANTS['DATATYPE_TEXT']:
               default:
-                 label=document.createElement('label');
-                 $label=$(label);
-                 $label.text(sheetCell.data);
-                 cell.append($label);
+                var cellDom=null;
+                if(sheetCell.properties.styleClasses.includes('gridsheet_gutter'))
+                {
+                    cellDom=document.createElement('label');
+                }
+                else
+                {
+                    cellDom=document.createElement('textarea');
+                }
+                 $cellDom=$(cellDom);
+                 if(sheetCell.properties.styleClasses.includes('gridsheet_gutter'))
+                {
+                    $cellDom.text(sheetCell.data);
+                }
+                else
+                {
+                    $cellDom.val(sheetCell.data).css({'resize':'none'});
+                    
+                }
+                 $cellDom.width(cell.width()-1).height(cell.height()-1);
+                 cell.append($cellDom);
                 break;
             }
         },
