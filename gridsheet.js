@@ -506,52 +506,61 @@
             this.createSheetNavigationButton(sheet);
             /* generate the gutter column*/
             this.generateGutterColumn(sheet);
-            
+            /* generate DOM content for the cells in the sheet*/
             this.renderDataColumns(sheet);
-
+            /* creating dummy floating top bar for improving UI usability*/
             this.createDummyGutterContentForUIUsability(sheet);
             
 
         },
         createDummyGutterContentForUIUsability:function(sheet)
         {
+             LOG.debug('Entering createDummyGutterContentForUIUsability() ');
+             /*generating a fake top bar for a sheet for better usability on the UI*/
             this.createDummyGutterContentTopBarUIUsability(sheet);
         },
         createDummyGutterContentTopBarUIUsability:function(sheet)
         {
+            LOG.debug('Entering createDummyGutterContentTopBarUIUsability() ');
+            /* creating a ul that will show up horizontally rather than a usual vertical data column*/
+            /* will be using this horizontal bar to represent the column headings and will behave like a sticky header when the user scrolls*/
             ul=document.createElement('ul');
             $ul=$(ul);
+            /* adding the class for proper horizontal styling and positioning */
             $ul.addClass('gridsheet_dummy_topbar');
-            
-            $ul.width(sheet.domContainer.innerWidth()).height(this.options._rowHeight+1);
+            /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
             totalLiWidth=0;
             for(var i=0;i<sheet.domContainer.children('ul').length;i++)
             {
+                /* cloning the existing column headers and adding them to this top bar*/
                 $li=sheet.domContainer.children('ul').eq(i).children('li').eq(0).clone();
                 $li.width($li.width()-1);
                 totalLiWidth+=$li.width();
+                /* appending the cloned column header to the top bar*/
                 $li.appendTo($ul);
             }
+            /* setting the total width to the horizontal bar*/
             $ul.width(totalLiWidth);
+            /* appending the top bar to the sheet */
             $ul.appendTo(sheet.domContainer);
-
+            /* adding the scroll event handler for the positioning the top floating bar */
             this.addScrollEventForSheetDomContainer(sheet.domContainer);
-            ///to do
+            
         },
         addScrollEventForSheetDomContainer:function(sheetDomContainer)
         {
+             LOG.debug('Entering addScrollEventForSheetDomContainer() ');
+             /* monitoring the scroll event for the sheet container*/
             sheetDomContainer.scroll(function(event){
-                console.log(sheetDomContainer.scrollTop());
+                /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
                 if(sheetDomContainer.scrollTop()!=0)
                 {
                     sheetDomContainer.children('.gridsheet_dummy_topbar').show();
                     sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()-16)+'px'});
-
                 }
                 else
                 {
-                    sheetDomContainer.children('.gridsheet_dummy_topbar').hide();
-                    
+                    sheetDomContainer.children('.gridsheet_dummy_topbar').hide();  
                 }
                 
 
@@ -560,7 +569,7 @@
         renderDataColumns:function(sheet)
         {
             var styleClasses={'styleClasses':['gridsheet_cell']};
-            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter','gridsheet_gutter_fixed']};
+            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
             
             for(var i=0;i<sheet._columnCount;i++)
             {
@@ -699,8 +708,8 @@
 
         },
         generateGutterColumn:function(sheet){
-            
-            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter','gridsheet_gutter_fixed']};
+              LOG.debug('Entering generateGutterColumn() ');
+            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
             var styleClassesForCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
             this.generateColumn(sheet,-1,styleClassesForFirstCell,styleClassesForCell);
         },
