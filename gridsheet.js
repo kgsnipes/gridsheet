@@ -508,8 +508,54 @@
             this.generateGutterColumn(sheet);
             
             this.renderDataColumns(sheet);
+
+            this.createDummyGutterContentForUIUsability(sheet);
             
 
+        },
+        createDummyGutterContentForUIUsability:function(sheet)
+        {
+            this.createDummyGutterContentTopBarUIUsability(sheet);
+        },
+        createDummyGutterContentTopBarUIUsability:function(sheet)
+        {
+            ul=document.createElement('ul');
+            $ul=$(ul);
+            $ul.addClass('gridsheet_dummy_topbar');
+            
+            $ul.width(sheet.domContainer.innerWidth()).height(this.options._rowHeight+1);
+            totalLiWidth=0;
+            for(var i=0;i<sheet.domContainer.children('ul').length;i++)
+            {
+                $li=sheet.domContainer.children('ul').eq(i).children('li').eq(0).clone();
+                $li.width($li.width()-1);
+                totalLiWidth+=$li.width();
+                $li.appendTo($ul);
+            }
+            $ul.width(totalLiWidth);
+            $ul.appendTo(sheet.domContainer);
+
+            this.addScrollEventForSheetDomContainer(sheet.domContainer);
+            ///to do
+        },
+        addScrollEventForSheetDomContainer:function(sheetDomContainer)
+        {
+            sheetDomContainer.scroll(function(event){
+                console.log(sheetDomContainer.scrollTop());
+                if(sheetDomContainer.scrollTop()!=0)
+                {
+                    sheetDomContainer.children('.gridsheet_dummy_topbar').show();
+                    sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()-16)+'px'});
+
+                }
+                else
+                {
+                    sheetDomContainer.children('.gridsheet_dummy_topbar').hide();
+                    
+                }
+                
+
+            });
         },
         renderDataColumns:function(sheet)
         {
@@ -691,108 +737,9 @@
                     }
                     
                 }
-                /*if(i==1 && $li)
-                {
-                    $li.css({'margin-top':((i)*$li.prev().height()+1)+'px'});
-                }*/
-
             }
                      
             return $ul;
-        },
-        addEventListenersForColumn1:function(ul){
-             var self=this;
-            $ul.hover(function(event){self.addEventHandlerForColumnHover(event,self);});
-            $ul.children('li').hover(function(event){self.addEventHandlerForColumnHover(event,self);});
-           $ul.children('li').children('textarea').hover(function(event){self.addEventHandlerForColumnHover(event,self);});
-        },
-        addEventListenersForColumn:function(ul){
-            var self=this;
-            var $ul=ul;
-            $ul.hover(function(event){self.addEventHandlerForColumnHover(event,self);})
-                .mousedown(function(event) {
-                   
-                    if($(event.target).attr('candrag'))
-                    {
-                        self.dragging=true;
-                        self.currentColumnDrag=$(event.target);
-                    }
-                })
-                .mouseup(function(event) {
-                    
-                   if($(event.target).attr('candrag'))
-                    {
-                        
-                        $(event.target).attr('endxpos',event.pageX);
-                        self.resizeColumnAfterDragEnd($(event.target));
-                        $(event.target).removeClass('gridsheet_cell_drag_pointer');
-
-                    }
-                    self.dragging=false;
-                    self.currentColumnDrag=null;
-                    $(event.target).removeAttr('candrag');
-                    
-                });
-        },
-        resizeColumnAfterDragEnd:function(ul)
-        {
-            startPos= parseInt(ul.attr('startxpos'));
-            endPos= parseInt(ul.attr('endxpos'));
-            LOG.info('resizing the column'+(endPos-startPos));
-            ul.width(ul.width()+(endPos-startPos));
-            ul.children('li').width(ul.width()-1);
-            ul.children('li label').width(ul.width()-1);
-            ul.children('li textarea').width(ul.width()-1);
-        },
-        addEventHandlerForColumnHover:function(event,self){
-            
-            xpos=event.pageX;
-            ypos=event.pageY;
-            ele=$(event.target);
-            columnPosition=ele.offset();
-            
-            if(xpos<(columnPosition.left+ele.width()) && xpos>=((columnPosition.left+ele.width())-5))
-            {
-               // ul.attr('candrag','candrag');
-               // ul.attr('startxpos',xpos);
-                if(!self.dragging)
-                {
-                    if(ele.type=='textarea')
-                    {
-                        ele.parent().parent().addClass('gridsheet_cell_drag_pointer');
-                    }
-                    else if(ele.type=='li')
-                    {
-                        ele.parent().addClass('gridsheet_cell_drag_pointer');
-                    }
-                    else if(ele.type=='ul')
-                    {
-                        ele.addClass('gridsheet_cell_drag_pointer');
-                    }
-                        
-                }
-            }
-            else
-            {
-               //ul.removeAttr('candrag');
-               if(!self.dragging)
-                {
-                   if(ele.type=='textarea')
-                    {
-                        ele.parent().parent().removeClass('gridsheet_cell_drag_pointer');
-                    }
-                    else if(ele.type=='li')
-                    {
-                        ele.parent().removeClass('gridsheet_cell_drag_pointer');
-                    }
-                     else if(ele.type=='ul')
-                    {
-                        ele.removeClass('gridsheet_cell_drag_pointer');
-                    }
-                }
-                
-            }
-            
         },
         createGridSheetColumn:function(sheet,columnNumber)
         {
