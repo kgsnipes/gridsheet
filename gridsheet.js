@@ -527,13 +527,21 @@
         },
         createDummyGutterContentSideBarUIUsability:function(sheet)
         {
+            LOG.debug('Entering createDummyGutterContentSideBarUIUsability() ');
+            /* cloning the existing side bar */
             $ul=sheet.domContainer.children('ul').eq(0).clone();
+            /* determining the first cell height to render the dummy side bar below the dummy top bar*/
             firstCellHeight=$ul.children("li").height()+2;
+            /* now remove the first cell as this was already captured in the dummy top bar*/
             $ul.children("li").eq(0).remove();
+            /* adding more styling to provide positioning */
             $ul.addClass('gridsheet_dummy_sidebar');
             $ul.addClass('gridsheet_column');
+            /* top position alignment for rendering the side bar just below the top bar.*/
             $ul.css({'top':firstCellHeight+'px'});
+            /* adding the side bar to the sheet container */
             $ul.appendTo(sheet.domContainer);
+            /* adding scroll event handler to the side bar to detect the scroll left postion and render the side bar appropriately*/
             this.addScrollEventForDummySideBarContainer(sheet.domContainer);
 
         },
@@ -542,7 +550,7 @@
             LOG.debug('Entering addScrollEventForDummySideBarContainer() ');
              /* monitoring the scroll event for the sheet container*/
             sheetDomContainer.scroll(function(event){
-                /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
+                /* if scroll left is zero then just hide the side bar. if the scroll left is not zero(active scrolling) then postion the side bar appropriately */
                 if(sheetDomContainer.scrollLeft()!=0)
                 {
                     sheetDomContainer.children('.gridsheet_dummy_sidebar').show();
@@ -551,8 +559,7 @@
                 else
                 {
                     sheetDomContainer.children('.gridsheet_dummy_sidebar').hide();  
-                }
-                
+                }               
 
             });
         },
@@ -565,6 +572,7 @@
             $ul=$(ul);
             /* adding the class for proper horizontal styling and positioning */
             $ul.addClass('gridsheet_dummy_topbar');
+            /* adding z-index so the top bar is always floating above the dummy side bar */
             $ul.css({'z-index':CONSTANTS['DUMMY_TOP_BAR_Z_INDEX']});
             /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
             totalLiWidth=0;
@@ -615,6 +623,7 @@
         },
         renderDataColumns:function(sheet)
         {
+            LOG.debug('Entering renderDataColumns() ');
             var styleClasses={'styleClasses':['gridsheet_cell']};
             var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
             
