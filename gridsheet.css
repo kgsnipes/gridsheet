@@ -116,6 +116,15 @@
 
 }
 
+.gridsheet_dummy_sidebar
+{
+	position:absolute;
+	overflow: hidden;
+	top:0px;
+	left:-39px;
+	display: none;
+}
+
 /*
 .gridsheet_gutter_fixed
 {

@@ -24,7 +24,9 @@
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date',
     'SHEET_BUTTON_WIDTH':100, /*100 pixels*/
-    'SCROLL_TOP_OFFSET':-16
+    'SCROLL_TOP_OFFSET':-16,
+    'SCROLL_LEFT_OFFSET':-16,
+    'DUMMY_TOP_BAR_Z_INDEX':100
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -517,8 +519,42 @@
         createDummyGutterContentForUIUsability:function(sheet)
         {
              LOG.debug('Entering createDummyGutterContentForUIUsability() ');
+            
              /*generating a fake top bar for a sheet for better usability on the UI*/
             this.createDummyGutterContentTopBarUIUsability(sheet);
+            this.createDummyGutterContentSideBarUIUsability(sheet);
+            
+        },
+        createDummyGutterContentSideBarUIUsability:function(sheet)
+        {
+            $ul=sheet.domContainer.children('ul').eq(0).clone();
+            firstCellHeight=$ul.children("li").height()+2;
+            $ul.children("li").eq(0).remove();
+            $ul.addClass('gridsheet_dummy_sidebar');
+            $ul.addClass('gridsheet_column');
+            $ul.css({'top':firstCellHeight+'px'});
+            $ul.appendTo(sheet.domContainer);
+            this.addScrollEventForDummySideBarContainer(sheet.domContainer);
+
+        },
+        addScrollEventForDummySideBarContainer:function(sheetDomContainer){
+
+            LOG.debug('Entering addScrollEventForDummySideBarContainer() ');
+             /* monitoring the scroll event for the sheet container*/
+            sheetDomContainer.scroll(function(event){
+                /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
+                if(sheetDomContainer.scrollLeft()!=0)
+                {
+                    sheetDomContainer.children('.gridsheet_dummy_sidebar').show();
+                    sheetDomContainer.children('.gridsheet_dummy_sidebar').css({'left':(sheetDomContainer.scrollLeft()+CONSTANTS['SCROLL_LEFT_OFFSET'])+'px'});
+                }
+                else
+                {
+                    sheetDomContainer.children('.gridsheet_dummy_sidebar').hide();  
+                }
+                
+
+            });
         },
         createDummyGutterContentTopBarUIUsability:function(sheet)
         {
@@ -529,6 +565,7 @@
             $ul=$(ul);
             /* adding the class for proper horizontal styling and positioning */
             $ul.addClass('gridsheet_dummy_topbar');
+            $ul.css({'z-index':CONSTANTS['DUMMY_TOP_BAR_Z_INDEX']});
             /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
             totalLiWidth=0;
             firstLiWidth=0;
@@ -554,12 +591,12 @@
             /* appending the top bar to the sheet */
             $ul.appendTo(sheet.domContainer);
             /* adding the scroll event handler for the positioning the top floating bar */
-            this.addScrollEventForSheetDomContainer(sheet.domContainer);
+            this.addScrollEventForDummyTopBarContainer(sheet.domContainer);
             
         },
-        addScrollEventForSheetDomContainer:function(sheetDomContainer)
+        addScrollEventForDummyTopBarContainer:function(sheetDomContainer)
         {
-             LOG.debug('Entering addScrollEventForSheetDomContainer() ');
+             LOG.debug('Entering addScrollEventForDummyTopBarContainer() ');
              /* monitoring the scroll event for the sheet container*/
             sheetDomContainer.scroll(function(event){
                 /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
