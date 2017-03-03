@@ -23,7 +23,8 @@
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date',
-    'SHEET_BUTTON_WIDTH':100 /*100 pixels*/
+    'SHEET_BUTTON_WIDTH':100, /*100 pixels*/
+    'SCROLL_TOP_OFFSET':-16
     };
     /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
@@ -530,15 +531,24 @@
             $ul.addClass('gridsheet_dummy_topbar');
             /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
             totalLiWidth=0;
+            firstLiWidth=0;
+            isFirstColumn=true;
             for(var i=0;i<sheet.domContainer.children('ul').length;i++)
             {
+
                 /* cloning the existing column headers and adding them to this top bar*/
                 $li=sheet.domContainer.children('ul').eq(i).children('li').eq(0).clone();
                 $li.width($li.width()-1);
                 totalLiWidth+=$li.width();
                 /* appending the cloned column header to the top bar*/
                 $li.appendTo($ul);
+                if(isFirstColumn)
+                {
+                    firstLiWidth=$li.width();
+                    isFirstColumn=!isFirstColumn;
+                }
             }
+            totalLiWidth+=firstLiWidth;
             /* setting the total width to the horizontal bar*/
             $ul.width(totalLiWidth);
             /* appending the top bar to the sheet */
@@ -556,7 +566,7 @@
                 if(sheetDomContainer.scrollTop()!=0)
                 {
                     sheetDomContainer.children('.gridsheet_dummy_topbar').show();
-                    sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()-16)+'px'});
+                    sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()+CONSTANTS['SCROLL_TOP_OFFSET'])+'px'});
                 }
                 else
                 {
