@@ -24,7 +24,7 @@
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date',
     'SHEET_BUTTON_WIDTH':100, /*100 pixels*/
-    'SCROLL_TOP_OFFSET':-16,
+    'SCROLL_TOP_OFFSET':0,
     'SCROLL_LEFT_OFFSET':-16,
     'DUMMY_TOP_BAR_Z_INDEX':100
     };
@@ -294,10 +294,10 @@
              LOG.debug('Entering init() ');
             /*initiating browser detection*/
              BrowserDetect.init();
-             /*check for performance related risks */
-              this.performanceCheckForOptions();
-             /*init Document Data*/
-             this.initDocumentData();
+            /*check for performance related risks */
+            this.performanceCheckForOptions();
+            /*init Document Data*/
+            this.initDocumentData();
             /*this build the dom object and caches this in the jquery object*/
             this.buildCache();
             /*this starts to build up the UI*/
@@ -331,21 +331,30 @@
             LOG.debug('Entering initDocumentData() ');
 
             this.dragging=false;
-           
-            /*creating the document object*/
-            this.documentObj=new Document();
-
-            /*initializing the sheets */
-            this.documentObj.sheets=[];
-            
-            /*creating sheet data for the document*/
-            var i=0;
-            while(i<this.options.sheets)
+            if(this.options.documentObj)
             {
-                LOG.info('Creating empty sheet data for sheet number - ' +(i+1));
-                this.documentObj.sheets.push(this.createSheetObj(i,this.options.rows,this.options.columns));      
-                i++;
+                /*creating the document object*/
+                this.documentObj=this.options.document;
             }
+            else
+            {
+                /*creating the document object*/
+                this.documentObj=new Document();
+
+                /*initializing the sheets */
+                this.documentObj.sheets=[];
+            
+                /*creating sheet data for the document*/
+                var i=0;
+                while(i<this.options.sheets)
+                {
+                    LOG.info('Creating empty sheet data for sheet number - ' +(i+1));
+                    this.documentObj.sheets.push(this.createSheetObj(i,this.options.rows,this.options.columns));      
+                    i++;
+                }
+
+            }
+            
             LOG.info('Finished creating the sheet data for the document');
             
         },
@@ -541,6 +550,7 @@
             $ul.css({'top':firstCellHeight+'px'});
             /* adding the side bar to the sheet container */
             $ul.appendTo(sheet.domContainer);
+            
             /* adding scroll event handler to the side bar to detect the scroll left postion and render the side bar appropriately*/
             this.addScrollEventForDummySideBarContainer(sheet.domContainer);
 
@@ -568,36 +578,27 @@
             LOG.debug('Entering createDummyGutterContentTopBarUIUsability() ');
             /* creating a ul that will show up horizontally rather than a usual vertical data column*/
             /* will be using this horizontal bar to represent the column headings and will behave like a sticky header when the user scrolls*/
-            ul=document.createElement('ul');
-            $ul=$(ul);
+            div=document.createElement('div');
+            $div=$(div);
             /* adding the class for proper horizontal styling and positioning */
-            $ul.addClass('gridsheet_dummy_topbar');
+            $div.addClass('gridsheet_dummy_topbar');
             /* adding z-index so the top bar is always floating above the dummy side bar */
-            $ul.css({'z-index':CONSTANTS['DUMMY_TOP_BAR_Z_INDEX']});
+            $div.css({'z-index':CONSTANTS['DUMMY_TOP_BAR_Z_INDEX']});
             /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
             totalLiWidth=0;
             firstLiWidth=0;
             isFirstColumn=true;
-            for(var i=0;i<sheet.domContainer.children('ul').length;i++)
-            {
-
-                /* cloning the existing column headers and adding them to this top bar*/
-                $li=sheet.domContainer.children('ul').eq(i).children('li').eq(0).clone();
-                $li.width($li.width()-1);
-                totalLiWidth+=$li.width();
-                /* appending the cloned column header to the top bar*/
-                $li.appendTo($ul);
-                if(isFirstColumn)
-                {
-                    firstLiWidth=$li.width();
-                    isFirstColumn=!isFirstColumn;
-                }
-            }
-            totalLiWidth+=firstLiWidth;
+            sheet.domContainer.children('ul').clone().appendTo($div);
+            $div.children('ul').each(function() {
+               $(this).children('li').eq(0).nextAll().remove();
+               totalLiWidth+=$(this).width();
+            });
+            //totalLiWidth+=firstLiWidth;
             /* setting the total width to the horizontal bar*/
-            $ul.width(totalLiWidth);
+            $div.width(totalLiWidth);
+            $div.height($div.children('ul').first().children('li').first().height());
             /* appending the top bar to the sheet */
-            $ul.appendTo(sheet.domContainer);
+            $div.appendTo(sheet.domContainer);
             /* adding the scroll event handler for the positioning the top floating bar */
             this.addScrollEventForDummyTopBarContainer(sheet.domContainer);
             
@@ -608,7 +609,7 @@
              /* monitoring the scroll event for the sheet container*/
             sheetDomContainer.scroll(function(event){
                 /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
-                if(sheetDomContainer.scrollTop()!=0)
+                if(sheetDomContainer.scrollTop()>0)
                 {
                     sheetDomContainer.children('.gridsheet_dummy_topbar').show();
                     sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()+CONSTANTS['SCROLL_TOP_OFFSET'])+'px'});
@@ -906,8 +907,9 @@
             this.options._height=this.getMeasurementValue(this.options.height);
             /*fetching the document width and height from the browser*/
             /* reducing 10 percent from the document dimensions*/
-            this.options._documentWidth=$(document).width()-($(document).width()*0.02);
-            this.options._documentHeight=$(document).height()-($(document).height()*0.02);
+            this.options._documentWidth=$(window).width()-($(window).width()*0.02);
+            //this.options._documentHeight=$(document).height()-($(document).height()*0.02);
+            this.options._documentHeight=$(window).height();
             /*if the dimension is percentage or em based in the config then convert then to 
                pixel values as pixel values will be the based for all the calculations in this plugin*/
                /*first calculation for the width*/
@@ -1060,7 +1062,11 @@
         _columnWidth:100,
         _rowHeight:30,
         sheets:3,
-        onComplete: null
+        onComplete: null,
+        documentName:'Untitled Document',
+        document:null,
+        onImportDone:function(documentObj){ LOG.info('Default on Import Done event');},
+        onSave:function(documentObj){LOG.info('Default on save Event');}
     };
 
 })(jQuery, window, document); 
