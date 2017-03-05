@@ -320,11 +320,29 @@
             this.getInitialMeasurementsForUI();
             /*setting the dimensions for the container*/
             this.setDimensionsForContainer();
+            /* adding container for toolbar and document name*/
+            this.addingToolBarAndDocumentContainer();
             /*creating the table*/
             this.generateDocumentUI();
             /*hiding the loader*/
             this.loaded();
            
+        },
+        addingToolBarAndDocumentContainer:function () {
+            
+             LOG.debug('Entering addingToolBarAndDocumentContainer() ');
+             /* defining the document container with 80% height of the gridsheet plugin*/
+            var $documentContainer=$(document.createElement('div'));
+            $documentContainer.addClass('gridsheet_document_container').width(this.$element.width()).height(this.$element.height()*0.80);
+
+            /* defining the toolbar for the gridsheet plugin with 20% of the height */
+            var $toolBarDiv=$(document.createElement('div'));
+            $toolBarDiv.addClass('gridsheet_toolbar').width(this.$element.width()).height(this.$element.height()*0.20);
+            
+            /* adding the toolbar to the gridsheet plugin dom*/
+            this.$element.append($toolBarDiv);
+            /* adding the documentContainer to the gridsheet plugin dom*/
+            this.$element.append($documentContainer);
         },
         initDocumentData:function()
         {
@@ -743,12 +761,13 @@
         createSheetDomContainer:function(sheet)
         {
             LOG.debug('Entering createSheetDomContainer() ');
+            var $documentContainer=this.$element.children('.gridsheet_document_container').eq(0);
             /*creating DIV container for each sheet*/
             sheetDom=document.createElement('div');
             $sheet=$(sheetDom);
             /*setting dimensions for the sheet dom container*/
-            $sheet.width(this.options._width-(this.options._width*0.005));
-            $sheet.height(this.options._height-(this.options._height*0.05));
+            $sheet.width($documentContainer.width()-($documentContainer.width()*0.005));
+            $sheet.height($documentContainer.height()-($documentContainer.height()*0.10));
             /*first sheet should not be hidden from the view, others should be hidden*/
             if(sheet.sheetNumber>1)
             {
@@ -757,7 +776,7 @@
             /* adding styling to the cell*/
             $sheet.addClass('gridsheet_sheet');
             $sheet.addClass(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR']+sheet.sheetNumber);
-            this.$element.append($sheet);
+            this.$element.children('.gridsheet_document_container').eq(0).append($sheet);
             /*associating DOM container with the sheet*/
             sheet.domContainer=$sheet;
             $sheet.data(sheet);

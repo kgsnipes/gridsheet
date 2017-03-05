@@ -110,12 +110,7 @@
 	top:0px;
 	left:0px;
 	display: none;
-}
-
-.gridsheet_dummy_topbar li
-{
-	float:left;
-
+	border-bottom: 1px solid #888;
 }
 
 .gridsheet_dummy_sidebar
@@ -125,6 +120,17 @@
 	top:0px;
 	left:-39px;
 	display: none;
+}
+
+.gridsheet_toolbar
+{
+	overflow: hidden;
+}
+
+.gridsheet_document_container
+{
+	overflow: hidden;
+	position:relative;
 }
 
 /*
