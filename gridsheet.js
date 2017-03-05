@@ -857,28 +857,34 @@
               case CONSTANTS['DATATYPE_TEXT']:
               default:
                 var cellDom=null;
-                if(sheetCell.properties.styleClasses.includes('gridsheet_gutter'))
-                {
-                    cellDom=document.createElement('label');
-                }
-                else
-                {
-                    cellDom=document.createElement('textarea');
-                }
-                 $cellDom=$(cellDom);
+                cellDom=document.createElement('div');
+                var $cellDom=$(cellDom);
+                
                  if(sheetCell.properties.styleClasses.includes('gridsheet_gutter'))
                 {
                     $cellDom.text(sheetCell.data);
                 }
                 else
                 {
-                    $cellDom.val(sheetCell.data).addClass('gridsheet_cell_textarea');
+                    $cellDom.text(sheetCell.data);
                     
                 }
+                 
                  $cellDom.width(cell.width()-1).height(cell.height()-1);
+                 this.addEventListenerForCell($cellDom,sheetCell);
                  cell.append($cellDom);
                 break;
             }
+        },
+        addEventListenerForCell:function(cellDom,sheetCell)
+        {
+            self=this;
+            cellDom.dblclick(function(event){
+               LOG.info('This is still to be implemented.');
+               /*need to add an editor with a lot of capability*/
+
+            });
+
         },
         setDimensionsForContainer:function () {
             LOG.debug('Entering setDimensionsForContainer() ');
