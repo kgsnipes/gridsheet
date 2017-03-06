@@ -903,18 +903,67 @@
                  if(sheetCell.properties.styleClasses.includes('gridsheet_gutter'))
                 {
                     $cellDom.text(sheetCell.data);
+
+                    var draggerX=document.createElement('div');
+                    this.addEventListenerForColumnDragger(draggerX);
+                    $draggerX=$(draggerX);
+                    $draggerX.addClass('gridsheet_column_dragger');
+                    $draggerX.attr('draggable',"true");
+                    $draggerX.width((cell.width()*0.10)-1).height(cell.height()-1);
+
+                    $draggerY=$(document.createElement('div'));
+                    $draggerY.addClass('gridsheet_row_dragger');
+                    $draggerY.attr('draggable',"true");
+                    $draggerY.width((cell.width()*0.80)-1).height((cell.height()*0.20)-1);
+
+                    $cellDom.width((cell.width()*0.80)-1).height((cell.height()*0.80)-1);
+                    cell.append($cellDom);
+                    cell.append($draggerY);
+                    cell.append($draggerX);
+                    
+                    
                 }
                 else
                 {
                     $cellDom.text(sheetCell.data);
+                    $cellDom.width(cell.width()-1).height(cell.height()-1);
+                    cell.append($cellDom);
                     
                 }
                  
-                 $cellDom.width(cell.width()-1).height(cell.height()-1);
-                 cell.append($cellDom);
-                 this.addEventListenerForCell($cellDom,sheetCell);
+                this.addEventListenerForCell($cellDom,sheetCell);
                 break;
             }
+        },
+        addEventListenerForColumnDragger:function(draggerX)
+        {
+            self=this;
+            draggerX.addEventListener("dragend", function( event ) {
+                
+                            var $draggerX=$(draggerX);
+                            console.log(event.offsetX);
+                            self.resizeColumnWithWidth($draggerX,event);
+
+                    }, false);
+        },
+        resizeColumnWithWidth:function(columnDragger,event)
+        {
+            if(columnDragger.parent().parent().width()>50)
+            {
+                columnDragger.parent().parent().width($draggerX.parent().width()+event.offsetX);
+                columnDragger.parent().parent().children('li').width($draggerX.parent().width()+event.offsetX-1);
+                
+                var leftPositionTillCurrentColumn=0;
+               
+
+
+                columnDragger.parent().parent().nextAll().each(function(ele){
+                    console.log($(this).position().left,event.offsetX);
+                    $(this).css({'left':$(this).position().left+event.offsetX});
+
+                });
+            }
+            
         },
         addEventListenerForCell:function(cellDom,sheetCell)
         {
@@ -924,26 +973,6 @@
                /*need to add an editor with a lot of capability*/
 
             });
-
-            if(cellDom.parent().hasClass('gridsheet_content_align_center'))
-            {
-                cellDom.hover(function(event){
-                    $this=$(this);
-                    
-                    if(event.pageX>($this.offset().left+($this.width()-5)) && event.pageX<=($this.offset().left+$this.width()))
-                    {
-                        console.log('on the border');
-                        $this.addClass('col-resize');
-                    }
-                    else
-                    {
-                         $this.removeClass('col-resize');
-                    }
-
-                });
-            }
-
-             
 
         },
         setDimensionsForContainer:function () {

@@ -134,8 +134,17 @@
 	position:relative;
 }
 
-.col-resize 
-{ cursor: col-resize; }
+.gridsheet_column_dragger 
+{ 
+	cursor: col-resize; 
+	float: right;
+    margin-top: -28px;
+}
+
+.gridsheet_row_dragger
+{
+	cursor: row-resize; 
+}
 
 /*
 .gridsheet_gutter_fixed
