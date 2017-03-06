@@ -337,18 +337,36 @@
 
             /* defining the toolbar for the gridsheet plugin with 20% of the height */
             var $toolBarDiv=$(document.createElement('div'));
-            $toolBarDiv.addClass('gridsheet_toolbar').width(this.$element.width()).height(this.$element.height()*0.20);
-            
+            $toolBarDiv.addClass('gridsheet_toolbar').width(this.$element.width()-(this.$element.width()*0.01)).height(this.$element.height()*0.20);
+            this.createToolBarUI($toolBarDiv);
             /* adding the toolbar to the gridsheet plugin dom*/
             this.$element.append($toolBarDiv);
             /* adding the documentContainer to the gridsheet plugin dom*/
             this.$element.append($documentContainer);
         },
+        createToolBarUI:function (toolBarDiv) {
+
+            $input=$(document.createElement('input'));
+            $input.attr("type","text");
+            $input.addClass("gridsheet_document_name");
+            $input.attr("placeholder","Document Title");
+            $input.val(this.documentObj.name);
+            $input.appendTo(toolBarDiv);
+            /* adding event listeners for the toolbar */
+            this.addEventListenerForToolbar(toolBarDiv);
+            
+        },
+        addEventListenerForToolbar:function(toolBarDiv) {
+            self=this;
+            toolBarDiv.children('gridsheet_document_name').change(function(event){
+                self.documentObj.name=$(this).val();
+            });
+        },
         initDocumentData:function()
         {
             LOG.debug('Entering initDocumentData() ');
 
-            this.dragging=false;
+           
             if(this.options.documentObj)
             {
                 /*creating the document object*/
@@ -358,6 +376,8 @@
             {
                 /*creating the document object*/
                 this.documentObj=new Document();
+
+                this.documentObj.name=this.options.documentName;
 
                 /*initializing the sheets */
                 this.documentObj.sheets=[];
@@ -851,7 +871,7 @@
             LOG.debug('Entering appendGridSheetCellToColumn() ');
             sheetCell.properties=$.extend({}, sheetCell.properties, props);
             li=document.createElement('li');
-            $li=$(li);
+            var $li=$(li);
             this.addPropertiesToGridSheetCellDOM($li,sheetCell);
             list.append($li);
             return $li;
@@ -891,8 +911,8 @@
                 }
                  
                  $cellDom.width(cell.width()-1).height(cell.height()-1);
-                 this.addEventListenerForCell($cellDom,sheetCell);
                  cell.append($cellDom);
+                 this.addEventListenerForCell($cellDom,sheetCell);
                 break;
             }
         },
@@ -904,6 +924,26 @@
                /*need to add an editor with a lot of capability*/
 
             });
+
+            if(cellDom.parent().hasClass('gridsheet_content_align_center'))
+            {
+                cellDom.hover(function(event){
+                    $this=$(this);
+                    
+                    if(event.pageX>($this.offset().left+($this.width()-5)) && event.pageX<=($this.offset().left+$this.width()))
+                    {
+                        console.log('on the border');
+                        $this.addClass('col-resize');
+                    }
+                    else
+                    {
+                         $this.removeClass('col-resize');
+                    }
+
+                });
+            }
+
+             
 
         },
         setDimensionsForContainer:function () {

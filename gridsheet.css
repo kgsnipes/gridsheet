@@ -125,6 +125,7 @@
 .gridsheet_toolbar
 {
 	overflow: hidden;
+	border:1px solid #888;
 }
 
 .gridsheet_document_container
@@ -132,6 +133,9 @@
 	overflow: hidden;
 	position:relative;
 }
+
+.col-resize 
+{ cursor: col-resize; }
 
 /*
 .gridsheet_gutter_fixed
