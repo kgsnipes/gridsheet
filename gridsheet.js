@@ -911,7 +911,9 @@
                     $draggerX.attr('draggable',"true");
                     $draggerX.width((cell.width()*0.10)-1).height(cell.height()-1);
 
-                    $draggerY=$(document.createElement('div'));
+                    var draggerY=document.createElement('div');
+                    $draggerY=$(draggerY);
+                    this.addEventListenerForRowDragger(draggerY);
                     $draggerY.addClass('gridsheet_row_dragger');
                     $draggerY.attr('draggable',"true");
                     $draggerY.width((cell.width()*0.80)-1).height((cell.height()*0.20)-1);
@@ -941,25 +943,78 @@
             draggerX.addEventListener("dragend", function( event ) {
                 
                             var $draggerX=$(draggerX);
-                            console.log(event.offsetX);
+                            
                             self.resizeColumnWithWidth($draggerX,event);
 
                     }, false);
         },
+        addEventListenerForRowDragger:function(draggerY)
+        {
+           
+            draggerY.addEventListener("dragend", function( event ) {
+                
+                            var $draggerY=$(draggerY);
+                            
+                            self.resizeRowWithHeight($draggerY,event);
+
+                    }, false);
+        },
+        resizeRowWithHeight:function(rowDragger,event)
+        {
+            console.log("distance dragged",(event.pageY-rowDragger.offset().top));
+            var distanceDragged=0;
+            if((event.pageY-rowDragger.offset().top)>0)
+            {
+                distanceDragged=(event.pageY-rowDragger.offset().top);
+            }
+            else
+            {
+                distanceDragged=-(event.pageY-rowDragger.offset().top);
+            }
+
+            if(distanceDragged>(rowDragger.parent().height()/4))
+            {
+                console.log("new height",rowDragger.parent().height(), rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
+                rowDragger.parent().height(rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
+              /* columnDragger.parent().parent().children('li').width(columnDragger.parent().parent().width()-1);
+                
+                var leftPositionTillCurrentColumn=columnDragger.parent().parent().position().left;
+                var widthOfModifiedColumn=columnDragger.parent().parent().width();
+
+                var leftStartPoint=leftPositionTillCurrentColumn+widthOfModifiedColumn;
+                columnDragger.parent().parent().nextAll().each(function(ele){
+                    $(this).css({'left':(leftStartPoint)+'px'});
+                    leftStartPoint+=$(this).width();
+
+                });*/
+            }
+            
+        },
         resizeColumnWithWidth:function(columnDragger,event)
         {
-            if(columnDragger.parent().parent().width()>50)
+            var distanceDragged=0;
+            if((event.pageX-columnDragger.offset().left)>0)
             {
-                columnDragger.parent().parent().width($draggerX.parent().width()+event.offsetX);
-                columnDragger.parent().parent().children('li').width($draggerX.parent().width()+event.offsetX-1);
-                
-                var leftPositionTillCurrentColumn=0;
+                distanceDragged=(event.pageX-columnDragger.offset().left);
+            }
+            else
+            {
+                distanceDragged=-(event.pageX-columnDragger.offset().left);
+            }
+
+            if(distanceDragged>(columnDragger.parent().parent().width()/4) && (columnDragger.parent().parent().width()+(event.pageX-columnDragger.offset().left))>(columnDragger.parent().parent().width()/4))
+            {
                
+                columnDragger.parent().parent().width(columnDragger.parent().parent().width()+(event.pageX-columnDragger.offset().left));
+                columnDragger.parent().parent().children('li').width(columnDragger.parent().parent().width()-1);
+                
+                var leftPositionTillCurrentColumn=columnDragger.parent().parent().position().left;
+                var widthOfModifiedColumn=columnDragger.parent().parent().width();
 
-
+                var leftStartPoint=leftPositionTillCurrentColumn+widthOfModifiedColumn;
                 columnDragger.parent().parent().nextAll().each(function(ele){
-                    console.log($(this).position().left,event.offsetX);
-                    $(this).css({'left':$(this).position().left+event.offsetX});
+                    $(this).css({'left':(leftStartPoint)+'px'});
+                    leftStartPoint+=$(this).width();
 
                 });
             }
@@ -1145,8 +1200,8 @@
     $.fn.gridsheet.defaults = {
         width: '80%',
         height: '80%',
-        columns:20,
-        rows:100,
+        columns:30,
+        rows:500,
         _columnWidth:100,
         _rowHeight:30,
         sheets:3,
