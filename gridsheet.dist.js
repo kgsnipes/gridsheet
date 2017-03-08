@@ -5,7 +5,7 @@
 */
 
 ;(function($, window, document, undefined) {
-    /*defining all the constants require for gridsheet*/
+ /*defining all the constants require for gridsheet*/
     var CONSTANTS={
     'PIXEL_SUFFIX':'px',
     'EM_SUFFIX':'em',
@@ -34,7 +34,7 @@
     'CSS_GRIDSHEET_TOOLBAR':'gridsheet_toolbar',
     'CSS_GRIDSHEET_CELL':'gridsheet_cell'
     };
-    /* logging function providing a closure for wrapping console logging.
+ /* logging function providing a closure for wrapping console logging.
     this function will help us to toggle between the logging to the console based on 
     the DEV mode flag */
     function Logger(){
@@ -142,8 +142,7 @@
     };
     /*logging object*/
     var LOG=new Logger();
-    
-    /*adding browser detection capability in the plugin*/
+/*adding browser detection capability in the plugin*/
     /*borrowed this from https://gist.github.com/iwanbk/5906833 */
     var BrowserDetect = {
         init: function() {
@@ -239,7 +238,7 @@
         }]
 
     };
-    function Document()
+function Document()
     {
         var name=null;
         var sheets=null;
@@ -274,7 +273,7 @@
 
     };
     
-    /*defining the plugin name*/
+  /*defining the plugin name*/
     var pluginName = 'gridsheet';
     /*creating a plugin*/
     function Plugin(element, options) {
@@ -316,7 +315,8 @@
             
         },
         
-        buildUI:function(){
+ 
+ buildUI:function(){
            LOG.debug('Entering buildUI() ');
             /*creating the loader*/
             this.initLoader();
@@ -1221,8 +1221,11 @@
             }
         }
 
-    });
-    /*plugging this plugin to the jquery object*/
+    }
+    
+
+    );
+/*plugging this plugin to the jquery object*/
     $.fn.gridsheet = function(options) {
         this.each(function() {
             if (!$.data(this, "plugin_" + pluginName)) {
@@ -1246,5 +1249,4 @@
         onImportDone:function(documentObj){ LOG.info('Default on Import Done event');},
         onSave:function(documentObj){LOG.info('Default on save Event');}
     };
-
 })(jQuery, window, document); 
