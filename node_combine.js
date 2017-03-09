@@ -13,7 +13,12 @@ function main()
 					'partials/browser_detection.js',
 					'partials/models.js',
 					'partials/plugin_functions_header.js',
-					'partials/plugin_functions_01.js',
+					'partials/plugin_functions_init.js',
+					'partials/plugin_functions_toolbar.js',
+					'partials/plugin_functions_cell.js',
+					'partials/plugin_functions_column.js',
+					'partials/plugin_functions_util.js',
+					'partials/plugin_functions_end.js',
 					'partials/plugin_functions_footer.js',
 					'partials/plugin_injection.js',
 					'partials/footer.js'];

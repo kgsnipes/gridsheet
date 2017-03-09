@@ -316,7 +316,7 @@ function Document()
         },
         
  
- buildUI:function(){
+         buildUI:function(){
            LOG.debug('Entering buildUI() ');
             /*creating the loader*/
             this.initLoader();
@@ -333,40 +333,6 @@ function Document()
             /*hiding the loader*/
             this.loaded();
            
-        },
-        addingToolBarAndDocumentContainer:function () {
-            
-             LOG.debug('Entering addingToolBarAndDocumentContainer() ');
-             /* defining the document container with 80% height of the gridsheet plugin*/
-            var $documentContainer=$(document.createElement('div'));
-            $documentContainer.addClass(CONSTANTS['CSS_DOCUMENT_CONTAINER']).width(this.$element.width()).height(this.$element.height()*0.80);
-
-            /* defining the toolbar for the gridsheet plugin with 20% of the height */
-            var $toolBarDiv=$(document.createElement('div'));
-            $toolBarDiv.addClass(CONSTANTS['CSS_GRIDSHEET_TOOLBAR']).width(this.$element.width()-(this.$element.width()*0.01)).height(this.$element.height()*0.20);
-            this.createToolBarUI($toolBarDiv);
-            /* adding the toolbar to the gridsheet plugin dom*/
-            this.$element.append($toolBarDiv);
-            /* adding the documentContainer to the gridsheet plugin dom*/
-            this.$element.append($documentContainer);
-        },
-        createToolBarUI:function (toolBarDiv) {
-
-            $input=$(document.createElement('input'));
-            $input.attr("type","text");
-            $input.addClass(CONSTANTS['CSS_GRIDSHEET_DOCUMENT_NAME']);
-            $input.attr("placeholder",CONSTANTS['GRIDSHEET_DEFAULT_DOCUMENT_NAME_PLACEHOLDER']);
-            $input.val(this.documentObj.name);
-            $input.appendTo(toolBarDiv);
-            /* adding event listeners for the toolbar */
-            this.addEventListenerForToolbar(toolBarDiv);
-            
-        },
-        addEventListenerForToolbar:function(toolBarDiv) {
-            self=this;
-            toolBarDiv.children('gridsheet_document_name').change(function(event){
-                self.documentObj.name=$(this).val();
-            });
         },
         initDocumentData:function()
         {
@@ -415,23 +381,6 @@ function Document()
                 /*creating the 2D array for holding cell data*/
                 sheet.sheetData=this.createSheetData(sheet,rows,columns);
                 return sheet;
-        },
-        performanceCheckForOptions:function()
-        {
-              LOG.debug('Entering performanceCheckForOptions() ');
-              /*assessing the risk on the performance in regards to the options provided for the plugin*/
-              /*we should have optimal number of rows on the sheet - which should be between 100 and 200 on load*/
-              if(this.options.rows>CONSTANTS['OPTIMAL_ROWS'])
-              {
-                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_ROWS']+' or less for reducing the risk on performance');
-              }
-              /*we should have the optimal number of columns on the sheet - which should be between 10-20 on load */
-              if(this.options.columns>CONSTANTS['OPTIMAL_COLUMNS'])
-              {
-                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_COLUMNS']+' or less for reducing the risk on performance');
-              }
-
-
         },
         createSheetData:function(sheet,rows,columns)
         {
@@ -485,63 +434,6 @@ function Document()
             props.rowHeight=this.options._rowHeight;
             props.formula=null;
             return props;
-        },
-        getColumnNameForColumnNumber:function(columnNumber)
-        {
-            LOG.debug('Entering getColumnNameForColumnNumber() ');
-            /* deriving the column name from the cloumn number */
-            /*
-                Logic for understanding:
-                - while the columnNumber is less than the number of column labels
-                just keep dividing the columnNumber and append the character at the index(quotient-1) in the column labels list.
-                Also keep storing the remainder(modulo value).
-
-                - if the columnNumber is lesser than the number of column Labels then the logic breaks the loop.
-
-                - if the remainder is greater than zero then append the character at the index(remainder-1) in the column labels list.
-                - if the remainder is lesser or equal to zero then use the character at the index(quotient-1) in the column labels list.
-            */
-             columnName='';
-             remainder=0;
-             arrLength=CONSTANTS['COLUMN_NAME_CHARACTERS'].length;
-                while(columnNumber>arrLength)
-                {
-                    remainder=columnNumber%arrLength;
-                    columnNumber=columnNumber/arrLength;
-                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
-                }
-                if(remainder>0)
-                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(remainder-1);
-                else
-                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
-                    
-            return columnName;        
-        },
-        getColumnNumberForColumnName:function(columnName)
-        {
-            LOG.debug('Entering getColumnNumberForColumnName() ');
-            /* deriving the column number from column name*/
-            /*
-                Logic for understanding:
-                - if the columnName is of single character in length then return index of the character in the columnLabel list.
-                - else find the index of the character from the left side of the column name and determine the index of the column label and add one. now 
-                multiply the this by length of the columnLabel list. and add it to the return value.
-                - keep calling the same function onto itself till the columnName length is greater than or equal to one as you strip out characters from the left
-                after the previous step. keep adding the result to the return value.
-            */
-            var ret=1;
-            if(columnName.length==1)
-            {
-                ret=CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0));
-            }
-            else if(columnName.length>1)
-            {
-                ret+=(CONSTANTS['COLUMN_NAME_CHARACTERS'].length*(CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0))+1));
-                if(columnName.substring(1).length>=1)
-                    ret+=getColumnNumberForColumnName(columnName.substring(1));    
-            }
-            return ret;
-            
         },
         generateDocumentUI:function()
         {
@@ -809,69 +701,98 @@ function Document()
             return $sheet;
 
         },
-        generateGutterColumn:function(sheet){
-              LOG.debug('Entering generateGutterColumn() ');
-            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
-            var styleClassesForCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
-            this.generateColumn(sheet,-1,styleClassesForFirstCell,styleClassesForCell);
+        
+        setDimensionsForContainer:function () {
+            LOG.debug('Entering setDimensionsForContainer() ');
+            /*setting the dimension for the container after calculation*/
+            LOG.info('container width '+ this.options._width);
+            LOG.info('container height '+this.options._height);
+          this.$element.width(this.options._width);
+          this.$element.height(this.options._height);  
         },
-        generateColumn:function(sheet,columnNumber,styleClassesForFirstCell,styleClassesForCell){
-             LOG.debug('Entering generateColumn() ');
-            var $ul=this.createGridSheetColumn(sheet,columnNumber);
-            isFirstRow=true;
-            /*styling for the gutter column needs to be different to make them look different than the actual cells on the sheet*/
-            var $li=null;
-            for(i=0;i<(sheet._rowCount+1);i++)
-            {   /*the first cell on the gutter column does not have a label*/             
-                if(isFirstRow)
-                {
-                    isFirstRow=!isFirstRow;
-                    if(columnNumber<0)
-                    {
-                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
-                    }
-                    else
-                    {
-                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,this.getColumnNameForColumnNumber(columnNumber+1),CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
-                    }
-                    
-                }
-                else
-                {
-                    if(columnNumber<0)
-                    {
-                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,i,CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
-                    }
-                    else
-                    {
-                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
-                    }
-                    
-                }
-            }
-                     
-            return $ul;
-        },
-        createGridSheetColumn:function(sheet,columnNumber)
-        {
-            LOG.debug('Entering createGridSheetColumn() ');
-            ul=document.createElement('ul');
-            $ul=$(ul);
-            $ul.addClass('gridsheet_column');
-            $ul.width(this.options._columnWidth);
-            $ul.height(this.options._currentRowCount*this.options._rowHeight);            
-            $ul.data({'columnNumber':columnNumber});            
-            sheet.domContainer.append($ul);
-            if(columnNumber<0)
+        getInitialMeasurementsForUI:function(){
+            LOG.debug('Entering getInitialMeasurementsForUI() ');
+            LOG.info('In function getInitialMeasurementsForUI()');
+            LOG.info('width for the plugin : '+this.options.width);
+            LOG.info('height for the plugin : '+this.options.height);
+            
+            /*fetching the  height and width dimension from the options and parsing
+              them to float values.*/
+            this.options._width=this.getMeasurementValue(this.options.width);
+            this.options._height=this.getMeasurementValue(this.options.height);
+            /*fetching the document width and height from the browser*/
+            /* reducing 10 percent from the document dimensions*/
+            this.options._documentWidth=$(window).width()-($(window).width()*0.02);
+            //this.options._documentHeight=$(document).height()-($(document).height()*0.02);
+            this.options._documentHeight=$(window).height();
+            /*if the dimension is percentage or em based in the config then convert then to 
+               pixel values as pixel values will be the based for all the calculations in this plugin*/
+               /*first calculation for the width*/
+            if(this.isPercentageValue(this.options.width))
             {
-                $ul.css({'left':'0px'});
+                this.options._width=this.getFloatValue((this.options._width/100)*this.options._documentWidth);
             }
-            else
+            else if(this.isEmValue(this.options.width))
             {
-                $ul.css({'left':(((columnNumber+1)*this.options._columnWidth))+'px'});
+                this.options._width=this.getFloatValue(this.options._width/CONSTANTS['ONEPX2EM']);
             }
-            return $ul;
+            /*now calculation for the height*/
+            if(this.isPercentageValue(this.options.height))
+            {
+               this.options._height=this.getFloatValue((this.options._height/100)*this.options._documentHeight);
+            }
+            else if(this.isEmValue(this.options.height))
+            {
+                 this.options._height=this.getFloatValue(this.options._height/CONSTANTS['ONEPX2EM']);
+            }
+            /*logging the calculated height and width calculation for the gridsheet container*/
+            LOG.info('calculated height in pixels : '+this.options._height);
+            LOG.info('calculated width in pixels : '+this.options._width);
+
+            
+            LOG.info('the column width is calculated at :'+this.options._columnWidth);
+            LOG.info('the row height is calculated at : '+this.options._rowHeight);
+            LOG.info('done with getInitialMeasurementsForUI');
+        }
+        
+
+		,
+        createToolBarUI:function (toolBarDiv) {
+            LOG.debug('Entering createToolBarUI() ');
+            $input=$(document.createElement('input'));
+            $input.attr("type","text");
+            $input.addClass(CONSTANTS['CSS_GRIDSHEET_DOCUMENT_NAME']);
+            $input.attr("placeholder",CONSTANTS['GRIDSHEET_DEFAULT_DOCUMENT_NAME_PLACEHOLDER']);
+            $input.val(this.documentObj.name);
+            $input.appendTo(toolBarDiv);
+            /* adding event listeners for the toolbar */
+            this.addEventListenerForToolbar(toolBarDiv);
+            
         },
+        addingToolBarAndDocumentContainer:function () {
+            
+             LOG.debug('Entering addingToolBarAndDocumentContainer() ');
+             /* defining the document container with 80% height of the gridsheet plugin*/
+            var $documentContainer=$(document.createElement('div'));
+            $documentContainer.addClass(CONSTANTS['CSS_DOCUMENT_CONTAINER']).width(this.$element.width()).height(this.$element.height()*0.80);
+
+            /* defining the toolbar for the gridsheet plugin with 20% of the height */
+            var $toolBarDiv=$(document.createElement('div'));
+            $toolBarDiv.addClass(CONSTANTS['CSS_GRIDSHEET_TOOLBAR']).width(this.$element.width()-(this.$element.width()*0.01)).height(this.$element.height()*0.20);
+            this.createToolBarUI($toolBarDiv);
+            /* adding the toolbar to the gridsheet plugin dom*/
+            this.$element.append($toolBarDiv);
+            /* adding the documentContainer to the gridsheet plugin dom*/
+            this.$element.append($documentContainer);
+        },
+        addEventListenerForToolbar:function(toolBarDiv) {
+            LOG.debug('Entering addEventListenerForToolbar() ');
+            self=this;
+            toolBarDiv.children('gridsheet_document_name').change(function(event){
+                self.documentObj.name=$(this).val();
+            });
+        }
+        ,
         appendGridSheetCellToColumn:function(list,sheetCell,props)
         {
             LOG.debug('Entering appendGridSheetCellToColumn() ');
@@ -1064,60 +985,73 @@ function Document()
 
             });
 
+        }
+        ,
+        createGridSheetColumn:function(sheet,columnNumber)
+        {
+            LOG.debug('Entering createGridSheetColumn() ');
+            ul=document.createElement('ul');
+            $ul=$(ul);
+            $ul.addClass('gridsheet_column');
+            $ul.width(this.options._columnWidth);
+            $ul.height(this.options._currentRowCount*this.options._rowHeight);            
+            $ul.data({'columnNumber':columnNumber});            
+            sheet.domContainer.append($ul);
+            if(columnNumber<0)
+            {
+                $ul.css({'left':'0px'});
+            }
+            else
+            {
+                $ul.css({'left':(((columnNumber+1)*this.options._columnWidth))+'px'});
+            }
+            return $ul;
         },
-        setDimensionsForContainer:function () {
-            LOG.debug('Entering setDimensionsForContainer() ');
-            /*setting the dimension for the container after calculation*/
-            LOG.info('container width '+ this.options._width);
-            LOG.info('container height '+this.options._height);
-          this.$element.width(this.options._width);
-          this.$element.height(this.options._height);  
+        generateGutterColumn:function(sheet){
+              LOG.debug('Entering generateGutterColumn() ');
+            var styleClassesForFirstCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
+            var styleClassesForCell={'styleClasses':['gridsheet_cell','gridsheet_content_align_center','gridsheet_gutter']};
+            this.generateColumn(sheet,-1,styleClassesForFirstCell,styleClassesForCell);
         },
-        getInitialMeasurementsForUI:function(){
-            LOG.debug('Entering getInitialMeasurementsForUI() ');
-            LOG.info('In function getInitialMeasurementsForUI()');
-            LOG.info('width for the plugin : '+this.options.width);
-            LOG.info('height for the plugin : '+this.options.height);
-            
-            /*fetching the  height and width dimension from the options and parsing
-              them to float values.*/
-            this.options._width=this.getMeasurementValue(this.options.width);
-            this.options._height=this.getMeasurementValue(this.options.height);
-            /*fetching the document width and height from the browser*/
-            /* reducing 10 percent from the document dimensions*/
-            this.options._documentWidth=$(window).width()-($(window).width()*0.02);
-            //this.options._documentHeight=$(document).height()-($(document).height()*0.02);
-            this.options._documentHeight=$(window).height();
-            /*if the dimension is percentage or em based in the config then convert then to 
-               pixel values as pixel values will be the based for all the calculations in this plugin*/
-               /*first calculation for the width*/
-            if(this.isPercentageValue(this.options.width))
-            {
-                this.options._width=this.getFloatValue((this.options._width/100)*this.options._documentWidth);
+        generateColumn:function(sheet,columnNumber,styleClassesForFirstCell,styleClassesForCell){
+             LOG.debug('Entering generateColumn() ');
+            var $ul=this.createGridSheetColumn(sheet,columnNumber);
+            isFirstRow=true;
+            /*styling for the gutter column needs to be different to make them look different than the actual cells on the sheet*/
+            var $li=null;
+            for(i=0;i<(sheet._rowCount+1);i++)
+            {   /*the first cell on the gutter column does not have a label*/             
+                if(isFirstRow)
+                {
+                    isFirstRow=!isFirstRow;
+                    if(columnNumber<0)
+                    {
+                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
+                    }
+                    else
+                    {
+                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,this.getColumnNameForColumnNumber(columnNumber+1),CONSTANTS['DATATYPE_TEXT']),styleClassesForFirstCell);
+                    }
+                    
+                }
+                else
+                {
+                    if(columnNumber<0)
+                    {
+                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,i,CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
+                    }
+                    else
+                    {
+                        $li=this.appendGridSheetCellToColumn($ul,this.createSheetCellWithData(new SheetCell(),i,columnNumber,'',CONSTANTS['DATATYPE_TEXT']),styleClassesForCell);
+                    }
+                    
+                }
             }
-            else if(this.isEmValue(this.options.width))
-            {
-                this.options._width=this.getFloatValue(this.options._width/CONSTANTS['ONEPX2EM']);
-            }
-            /*now calculation for the height*/
-            if(this.isPercentageValue(this.options.height))
-            {
-               this.options._height=this.getFloatValue((this.options._height/100)*this.options._documentHeight);
-            }
-            else if(this.isEmValue(this.options.height))
-            {
-                 this.options._height=this.getFloatValue(this.options._height/CONSTANTS['ONEPX2EM']);
-            }
-            /*logging the calculated height and width calculation for the gridsheet container*/
-            LOG.info('calculated height in pixels : '+this.options._height);
-            LOG.info('calculated width in pixels : '+this.options._width);
-
-            
-            LOG.info('the column width is calculated at :'+this.options._columnWidth);
-            LOG.info('the row height is calculated at : '+this.options._rowHeight);
-            LOG.info('done with getInitialMeasurementsForUI');
-        },
-        /*converts a number corrected to 2 decimal places*/
+                     
+            return $ul;
+        }
+        
+        ,/*converts a number corrected to 2 decimal places*/
         getFloatValue:function(value)
         {
             LOG.debug('Entering getFloatValue() ');
@@ -1159,7 +1093,81 @@ function Document()
             LOG.debug('Entering isEmValue() ');
             return typeof(value) ===  'string' && value.indexOf(CONSTANTS['EM_SUFFIX'])>=0
         },
-        /*creating the loader dom*/
+        getColumnNameForColumnNumber:function(columnNumber)
+        {
+            LOG.debug('Entering getColumnNameForColumnNumber() ');
+            /* deriving the column name from the cloumn number */
+            /*
+                Logic for understanding:
+                - while the columnNumber is less than the number of column labels
+                just keep dividing the columnNumber and append the character at the index(quotient-1) in the column labels list.
+                Also keep storing the remainder(modulo value).
+
+                - if the columnNumber is lesser than the number of column Labels then the logic breaks the loop.
+
+                - if the remainder is greater than zero then append the character at the index(remainder-1) in the column labels list.
+                - if the remainder is lesser or equal to zero then use the character at the index(quotient-1) in the column labels list.
+            */
+             columnName='';
+             remainder=0;
+             arrLength=CONSTANTS['COLUMN_NAME_CHARACTERS'].length;
+                while(columnNumber>arrLength)
+                {
+                    remainder=columnNumber%arrLength;
+                    columnNumber=columnNumber/arrLength;
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
+                }
+                if(remainder>0)
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(remainder-1);
+                else
+                    columnName+=CONSTANTS['COLUMN_NAME_CHARACTERS'].charAt(columnNumber-1);
+                    
+            return columnName;        
+        },
+        getColumnNumberForColumnName:function(columnName)
+        {
+            LOG.debug('Entering getColumnNumberForColumnName() ');
+            /* deriving the column number from column name*/
+            /*
+                Logic for understanding:
+                - if the columnName is of single character in length then return index of the character in the columnLabel list.
+                - else find the index of the character from the left side of the column name and determine the index of the column label and add one. now 
+                multiply the this by length of the columnLabel list. and add it to the return value.
+                - keep calling the same function onto itself till the columnName length is greater than or equal to one as you strip out characters from the left
+                after the previous step. keep adding the result to the return value.
+            */
+            var ret=1;
+            if(columnName.length==1)
+            {
+                ret=CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0));
+            }
+            else if(columnName.length>1)
+            {
+                ret+=(CONSTANTS['COLUMN_NAME_CHARACTERS'].length*(CONSTANTS['COLUMN_NAME_CHARACTERS'].indexOf(columnName.charAt(0))+1));
+                if(columnName.substring(1).length>=1)
+                    ret+=getColumnNumberForColumnName(columnName.substring(1));    
+            }
+            return ret;
+            
+        }
+        ,
+        performanceCheckForOptions:function()
+        {
+              LOG.debug('Entering performanceCheckForOptions() ');
+              /*assessing the risk on the performance in regards to the options provided for the plugin*/
+              /*we should have optimal number of rows on the sheet - which should be between 100 and 200 on load*/
+              if(this.options.rows>CONSTANTS['OPTIMAL_ROWS'])
+              {
+                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_ROWS']+' or less for reducing the risk on performance');
+              }
+              /*we should have the optimal number of columns on the sheet - which should be between 10-20 on load */
+              if(this.options.columns>CONSTANTS['OPTIMAL_COLUMNS'])
+              {
+                LOG.warn('Please reduce the number of rows to '+CONSTANTS['OPTIMAL_COLUMNS']+' or less for reducing the risk on performance');
+              }
+
+
+        },/*creating the loader dom*/
         initLoader:function()
         {
             LOG.debug('Entering initLoader() ');
@@ -1221,10 +1229,10 @@ function Document()
             }
         }
 
-    }
+  
     
 
-    );
+      });
 /*plugging this plugin to the jquery object*/
     $.fn.gridsheet = function(options) {
         this.each(function() {
