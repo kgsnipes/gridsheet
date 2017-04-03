@@ -12,7 +12,7 @@
     'OPTIMAL_COLUMNS':10,
     'CELL_CSS_PREFIX':'cell',
     'CSS_NAMING_SEPARATOR':'_',
-    'SHEET_CSS_PREFIX':'sheet',
+    'SHEET_CSS_PREFIX':'sheetnum',
     'DATATYPE_TEXT':'text',
     'DATATYPE_NUMBER':'number',
     'DATATYPE_DATE':'date',
@@ -25,5 +25,6 @@
     'GRIDSHEET_DEFAULT_DOCUMENT_NAME_PLACEHOLDER':'Document Name',
     'CSS_DOCUMENT_CONTAINER':'gridsheet_document_container',
     'CSS_GRIDSHEET_TOOLBAR':'gridsheet_toolbar',
-    'CSS_GRIDSHEET_CELL':'gridsheet_cell'
+    'CSS_GRIDSHEET_CELL':'gridsheet_cell',
+    'CSS_GRIDSHEET_DUMMY_TOPBAR':'gridsheet_dummy_topbar'
     };

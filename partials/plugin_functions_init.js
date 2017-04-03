@@ -191,6 +191,15 @@
 
             });
         },
+        updateDummyGutterContentTopBarUIUsability:function(sheetNumber,columnNumber,distanceDragged)
+        {
+            $sheetDomContainer=this.documentObj.sheets[sheetNumber-1].domContainer;
+            if($sheetDomContainer.find('gridsheet_dummy_topbar').length>0)
+            {
+              LOG.warn('need to implement here');
+            }
+
+        },
         createDummyGutterContentTopBarUIUsability:function(sheet)
         {
             LOG.debug('Entering createDummyGutterContentTopBarUIUsability() ');
@@ -199,7 +208,7 @@
             div=document.createElement('div');
             $div=$(div);
             /* adding the class for proper horizontal styling and positioning */
-            $div.addClass('gridsheet_dummy_topbar');
+            $div.addClass(CONSTANTS['CSS_GRIDSHEET_DUMMY_TOPBAR']);
             /* adding z-index so the top bar is always floating above the dummy side bar */
             $div.css({'z-index':CONSTANTS['DUMMY_TOP_BAR_Z_INDEX']});
             /* storing the total width of all column headers that we will use for the total width of the horizontal bar*/
@@ -229,12 +238,12 @@
                 /* if scroll top is zero then just hide the top bar. if the scroll top is not zero(active scrolling) then postion the top bar appropriately */
                 if(sheetDomContainer.scrollTop()>0)
                 {
-                    sheetDomContainer.children('.gridsheet_dummy_topbar').show();
-                    sheetDomContainer.children('.gridsheet_dummy_topbar').css({'top':(sheetDomContainer.scrollTop()+CONSTANTS['SCROLL_TOP_OFFSET'])+'px'});
+                    sheetDomContainer.children('.'+CONSTANTS['CSS_GRIDSHEET_DUMMY_TOPBAR']).show();
+                    sheetDomContainer.children('.'+CONSTANTS['CSS_GRIDSHEET_DUMMY_TOPBAR']).css({'top':(sheetDomContainer.scrollTop()+CONSTANTS['SCROLL_TOP_OFFSET'])+'px'});
                 }
                 else
                 {
-                    sheetDomContainer.children('.gridsheet_dummy_topbar').hide();  
+                    sheetDomContainer.children('.'+CONSTANTS['CSS_GRIDSHEET_DUMMY_TOPBAR']).hide();  
                 }
                 
 
@@ -361,7 +370,7 @@
         createSheetDomContainer:function(sheet)
         {
             LOG.debug('Entering createSheetDomContainer() ');
-            var $documentContainer=this.$element.children('.gridsheet_document_container').eq(0);
+            var $documentContainer=this.$element.children('.'+CONSTANTS['CSS_DOCUMENT_CONTAINER']).eq(0);
             /*creating DIV container for each sheet*/
             sheetDom=document.createElement('div');
             $sheet=$(sheetDom);
@@ -376,7 +385,7 @@
             /* adding styling to the cell*/
             $sheet.addClass(CONSTANTS['GRIDSHEET_CSS_SHEET']);
             $sheet.addClass(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR']+sheet.sheetNumber);
-            this.$element.children('.gridsheet_document_container').eq(0).append($sheet);
+            this.$element.children('.'+CONSTANTS['CSS_DOCUMENT_CONTAINER']).eq(0).append($sheet);
             /*associating DOM container with the sheet*/
             sheet.domContainer=$sheet;
             $sheet.data(sheet);

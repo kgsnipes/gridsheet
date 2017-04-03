@@ -151,34 +151,51 @@
                     leftStartPoint+=$(this).width();
 
                 });
-                this.updateSheetWithColumnWidthForColumn(columnDragger);
+                $columnLabelDiv=columnDragger.parent().find('div').eq(0);
+                $columnLabelDiv.width($columnLabelDiv.width()+distanceDragged);
+                $rowDraggerDiv=columnDragger.parent().find('div').eq(1);
+                $rowDraggerDiv.width($rowDraggerDiv.width()+distanceDragged);
+
+                this.updateSheetWithColumnWidthForColumn(columnDragger,distanceDragged,widthOfModifiedColumn);
 
             }
             
         },
-        updateSheetWithColumnWidthForColumn:function(columnDragger){
+        updateSheetWithColumnWidthForColumn:function(columnDragger,distanceDragged,widthOfModifiedColumn){
                 var sheetNumber=0;
-                console.log('index of parent on sheet',columnDragger.parent().parent().parent().children('ul').index(columnDragger.parent().parent()));
+                var columnNumber=columnDragger.parent().parent().parent().children('ul').index(columnDragger.parent().parent())
+                LOG.info('index of parent on sheet'+columnNumber);
+                var sheetNamingPrefix=CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR'];
                 if(columnDragger.parent().parent().parent().hasClass(CONSTANTS['GRIDSHEET_CSS_SHEET']))
                 {
-                    console.log('inside sheet');
+                    LOG.info('inside sheet');
                     var sheetClasses=columnDragger.parent().parent().parent().attr('class').split(' ');
-                    console.log(sheetClasses);
+                    LOG.info(sheetClasses);
                     if(sheetClasses)
                     {
                         for(var i=0;i<sheetClasses.length;i++)
                         {
-                            if(sheetClasses[i].indexOf(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR'])!=-1)
+                            if(sheetClasses[i].indexOf(sheetNamingPrefix)!=-1)
                             {
-                                sheetNumber=sheetClasses[i].substring(sheetClasses[i].indexOf(CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR']));
+                                
+                                sheetNumber=sheetClasses[i].substring(sheetClasses[i].lastIndexOf(CONSTANTS['CSS_NAMING_SEPARATOR'])+1,sheetClasses[i].length);
                                 break;
                             }
                         }
                     }
                 }
-                if(sheetNumber>0)
+                if(sheetNumber>0 && columnNumber>0)
                 {
-                    console.log('sheet number is :', sheetNumber);
+                    LOG.info('sheet number is :'+ sheetNumber);
+                    LOG.info('setting the column width for the column adjusted')
+                    for(i=0;i<this.documentObj.sheets[sheetNumber-1].sheetData.length;i++)
+                    {
+                        this.documentObj.sheets[sheetNumber-1].sheetData[i][columnNumber-1].properties.columnWidth=parseInt(widthOfModifiedColumn);
+
+                    }
+                    console.log(this.documentObj.sheets[sheetNumber-1]);
+                    this.updateDummyGutterContentTopBarUIUsability(sheetNumber,columnNumber,distanceDragged);
+
                 }
 
         },
