@@ -107,19 +107,23 @@
 
             if(distanceDragged>(rowDragger.parent().height()/4))
             {
-                console.log("new height",rowDragger.parent().height(), rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
-                rowDragger.parent().height(rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
-              /* columnDragger.parent().parent().children('li').width(columnDragger.parent().parent().width()-1);
-                
-                var leftPositionTillCurrentColumn=columnDragger.parent().parent().position().left;
-                var widthOfModifiedColumn=columnDragger.parent().parent().width();
+                var rowDraggerLi=rowDragger.parent();
+                var rowDraggerUl=rowDragger.parent().parent();
+                var rowIndex=rowDragger.parent().index();
+                if(rowIndex>-1)
+                {
+                    
+                    rowDraggerUl.parent().children("ul").each(function(){
+                        $this=$(this);
+                        if(!($this.hasClass('gridsheet_dummy_sidebar') || $this.hasClass('gridsheet_dummy_topbar')))
+                        {
+                            var rowLi=$this.children('li').eq(rowIndex);
+                            rowLi.height(rowLi.height()+distanceDragged);
+                        }
 
-                var leftStartPoint=leftPositionTillCurrentColumn+widthOfModifiedColumn;
-                columnDragger.parent().parent().nextAll().each(function(ele){
-                    $(this).css({'left':(leftStartPoint)+'px'});
-                    leftStartPoint+=$(this).width();
+                    });
+                }
 
-                });*/
             }
             
         },
@@ -193,7 +197,6 @@
                         this.documentObj.sheets[sheetNumber-1].sheetData[i][columnNumber-1].properties.columnWidth=parseInt(widthOfModifiedColumn);
 
                     }
-                    console.log(this.documentObj.sheets[sheetNumber-1]);
                     this.updateDummyGutterContentTopBarUIUsability(sheetNumber,columnNumber,distanceDragged);
 
                 }

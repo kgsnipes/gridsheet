@@ -510,7 +510,7 @@ function Document()
 
             });
         },
-        createDummyGutterContentTopBarUIUsability:function(sheetNumber)
+        updateDummyGutterContentTopBarUIUsability:function(sheetNumber,columnNumber,distanceDragged)
         {
             $sheetDomContainer=this.documentObj.sheets[sheetNumber-1].domContainer;
             if($sheetDomContainer.find('gridsheet_dummy_topbar').length>0)
@@ -911,8 +911,25 @@ function Document()
 
             if(distanceDragged>(rowDragger.parent().height()/4))
             {
-                console.log("new height",rowDragger.parent().height(), rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
-                rowDragger.parent().height(rowDragger.parent().height()+(event.pageY-rowDragger.offset().top));
+                var rowDraggerLi=rowDragger.parent();
+                var rowDraggerUl=rowDragger.parent().parent();
+                var rowIndex=rowDragger.parent().index();
+                if(rowIndex>-1)
+                {
+                    
+                    rowDraggerUl.parent().children("ul").each(function(){
+                        $this=$(this);
+                        if(!($this.hasClass('gridsheet_dummy_sidebar') || $this.hasClass('gridsheet_dummy_topbar')))
+                        {
+                            var rowLi=$this.children('li').eq(rowIndex);
+                            rowLi.height(rowLi.height()+distanceDragged);
+                        }
+
+                    });
+                }
+
+
+
               /* columnDragger.parent().parent().children('li').width(columnDragger.parent().parent().width()-1);
                 
                 var leftPositionTillCurrentColumn=columnDragger.parent().parent().position().left;
@@ -960,12 +977,12 @@ function Document()
                 $rowDraggerDiv=columnDragger.parent().find('div').eq(1);
                 $rowDraggerDiv.width($rowDraggerDiv.width()+distanceDragged);
 
-                this.updateSheetWithColumnWidthForColumn(columnDragger,widthOfModifiedColumn);
+                this.updateSheetWithColumnWidthForColumn(columnDragger,distanceDragged,widthOfModifiedColumn);
 
             }
             
         },
-        updateSheetWithColumnWidthForColumn:function(columnDragger,widthOfModifiedColumn){
+        updateSheetWithColumnWidthForColumn:function(columnDragger,distanceDragged,widthOfModifiedColumn){
                 var sheetNumber=0;
                 var columnNumber=columnDragger.parent().parent().parent().children('ul').index(columnDragger.parent().parent())
                 LOG.info('index of parent on sheet'+columnNumber);
@@ -997,8 +1014,7 @@ function Document()
                         this.documentObj.sheets[sheetNumber-1].sheetData[i][columnNumber-1].properties.columnWidth=parseInt(widthOfModifiedColumn);
 
                     }
-                    console.log(this.documentObj.sheets[sheetNumber-1]);
-                    this.createDummyGutterContentTopBarUIUsability(sheetNumber);
+                    this.updateDummyGutterContentTopBarUIUsability(sheetNumber,columnNumber,distanceDragged);
 
                 }
 
