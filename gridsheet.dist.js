@@ -898,22 +898,27 @@ function Document()
         },
         resizeRowWithHeight:function(rowDragger,event)
         {
+            self=this;
             console.log("distance dragged",(event.pageY-rowDragger.offset().top));
             var distanceDragged=0;
+            var distanceDraggedMeasure=0;
             if((event.pageY-rowDragger.offset().top)>0)
             {
+                distanceDraggedMeasure=(event.pageY-rowDragger.offset().top);
                 distanceDragged=(event.pageY-rowDragger.offset().top);
             }
             else
             {
-                distanceDragged=-(event.pageY-rowDragger.offset().top);
+                distanceDraggedMeasure=-(event.pageY-rowDragger.offset().top);
+                distanceDragged=(event.pageY-rowDragger.offset().top);
             }
 
-            if(distanceDragged>(rowDragger.parent().height()/4))
+            if(distanceDraggedMeasure>(rowDragger.parent().height()/4))
             {
                 var rowDraggerLi=rowDragger.parent();
                 var rowDraggerUl=rowDragger.parent().parent();
                 var rowIndex=rowDragger.parent().index();
+                var heightOfModifiedRow=0;
                 if(rowIndex>-1)
                 {
                     
@@ -923,41 +928,73 @@ function Document()
                         {
                             var rowLi=$this.children('li').eq(rowIndex);
                             rowLi.height(rowLi.height()+distanceDragged);
+                            rowLi.children('div').eq(0).height(rowLi.children('div').eq(0).height()+distanceDragged);
+                            rowLi.children('div').eq(2).height(rowLi.children('div').eq(2).height()+distanceDragged).css({'margin-top':(self.getMeasurementValue(rowLi.children('div').eq(2).css('margin-top'))-distanceDragged)+'px'});
                         }
 
                     });
+
+                    this.updateSheetWithRowHeightForRow(rowDragger,distanceDragged,heightOfModifiedRow);
                 }
 
 
-
-              /* columnDragger.parent().parent().children('li').width(columnDragger.parent().parent().width()-1);
-                
-                var leftPositionTillCurrentColumn=columnDragger.parent().parent().position().left;
-                var widthOfModifiedColumn=columnDragger.parent().parent().width();
-
-                var leftStartPoint=leftPositionTillCurrentColumn+widthOfModifiedColumn;
-                columnDragger.parent().parent().nextAll().each(function(ele){
-                    $(this).css({'left':(leftStartPoint)+'px'});
-                    leftStartPoint+=$(this).width();
-
-                });*/
             }
             
+        },
+         updateSheetWithRowHeightForRow:function(rowDragger,distanceDragged,heightOfModifiedRow){
+              /*  var sheetNumber=0;
+                var columnNumber=columnDragger.parent().parent().parent().children('ul').index(columnDragger.parent().parent())
+                LOG.info('index of parent on sheet'+columnNumber);
+                var sheetNamingPrefix=CONSTANTS['SHEET_CSS_PREFIX']+CONSTANTS['CSS_NAMING_SEPARATOR'];
+                if(columnDragger.parent().parent().parent().hasClass(CONSTANTS['GRIDSHEET_CSS_SHEET']))
+                {
+                    LOG.info('inside sheet');
+                    var sheetClasses=columnDragger.parent().parent().parent().attr('class').split(' ');
+                    LOG.info(sheetClasses);
+                    if(sheetClasses)
+                    {
+                        for(var i=0;i<sheetClasses.length;i++)
+                        {
+                            if(sheetClasses[i].indexOf(sheetNamingPrefix)!=-1)
+                            {
+                                
+                                sheetNumber=sheetClasses[i].substring(sheetClasses[i].lastIndexOf(CONSTANTS['CSS_NAMING_SEPARATOR'])+1,sheetClasses[i].length);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(sheetNumber>0 && columnNumber>0)
+                {
+                    LOG.info('sheet number is :'+ sheetNumber);
+                    LOG.info('setting the column width for the column adjusted')
+                    for(i=0;i<this.documentObj.sheets[sheetNumber-1].sheetData.length;i++)
+                    {
+                        this.documentObj.sheets[sheetNumber-1].sheetData[i][columnNumber-1].properties.columnWidth=parseInt(widthOfModifiedColumn);
+
+                    }
+                    this.updateDummyGutterContentTopBarUIUsability(sheetNumber,columnNumber,distanceDragged);
+
+                }*/
+
         },
         resizeColumnWithWidth:function(columnDragger,event)
         {
 
             var distanceDragged=0;
+            var distanceDraggedMeasure=0;
             if((event.pageX-columnDragger.offset().left)>0)
             {
+                distanceDraggedMeasure=(event.pageX-columnDragger.offset().left);
                 distanceDragged=(event.pageX-columnDragger.offset().left);
             }
             else
             {
-                distanceDragged=-(event.pageX-columnDragger.offset().left);
+                distanceDraggedMeasure=-(event.pageX-columnDragger.offset().left);
+                distanceDragged=(event.pageX-columnDragger.offset().left);
             }
 
-            if(distanceDragged>(columnDragger.parent().parent().width()/4) && (columnDragger.parent().parent().width()+(event.pageX-columnDragger.offset().left))>(columnDragger.parent().parent().width()/4))
+            if(distanceDraggedMeasure>(columnDragger.parent().parent().width()/4) && (columnDragger.parent().parent().width()+(event.pageX-columnDragger.offset().left))>(columnDragger.parent().parent().width()/4))
             {
                
                 columnDragger.parent().parent().width(columnDragger.parent().parent().width()+(event.pageX-columnDragger.offset().left));
